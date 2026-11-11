@@ -216,9 +216,6 @@ class HttpSettingsSpec extends BaseSpec {
 
         and: "There should be only one account request"
         assert httpSettings.getRequestCount(request.account) == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should take account information from http data source on setuid request when rfc3986 enabled"() {
@@ -251,9 +248,6 @@ class HttpSettingsSpec extends BaseSpec {
 
         and: "There should be only one account request"
         assert httpSettingsWithRfc.getRfcRequestCount(request.account) == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should take account information from http data source on vtrack request"() {

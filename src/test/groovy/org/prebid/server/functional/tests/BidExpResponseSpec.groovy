@@ -633,9 +633,6 @@ class BidExpResponseSpec extends BaseSpec {
         then: "Bid response should contain exp data"
         assert response.seatbid.first.bid.first.exp == bidExpValue
 
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(config)
-
         where:
         mediaType | bidExpValue
         BANNER    | BANNER_TTL_DEFAULT_CACHE

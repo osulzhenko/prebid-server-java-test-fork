@@ -52,18 +52,8 @@ class AliasSpec extends BaseSpec {
             "adapters.generic.endpoint-compression"        : GZIP.value
     ]
 
-    private static PrebidServerService pbsServiceWithGenericHardAlias
-    private static PrebidServerService pbsServiceWithAmxHardAlias
-
-    def setupSpec() {
-        pbsServiceWithGenericHardAlias = pbsServiceFactory.getService(GENERIC_HARD_ALIAS_CONFIG)
-        pbsServiceWithAmxHardAlias = pbsServiceFactory.getService(AMX_HARD_ALIAS_CONFIG)
-    }
-
-    def cleanupSpec() {
-        pbsServiceFactory.removeContainer(GENERIC_HARD_ALIAS_CONFIG)
-        pbsServiceFactory.removeContainer(AMX_HARD_ALIAS_CONFIG)
-    }
+    private static final PrebidServerService pbsServiceWithGenericHardAlias = pbsServiceFactory.getService(GENERIC_HARD_ALIAS_CONFIG)
+    private static final PrebidServerService pbsServiceWithAmxHardAlias = pbsServiceFactory.getService(AMX_HARD_ALIAS_CONFIG)
 
     def "PBS should route request-defined alias to its parent adapter"() {
         given: "Default bid request with alias"

@@ -18,6 +18,7 @@ import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.model.response.auction.ErrorType
 import org.prebid.server.functional.service.PrebidServerException
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.PBSUtils
 import spock.lang.Shared
 
@@ -41,8 +42,8 @@ class AlternateBidderCodeSpec extends BaseSpec {
     private static final String ERROR_BID_CODE_VALIDATION = "BidId `%s` validation messages: " +
             "Error: invalid bidder code %s was set by the adapter %s for the account %s"
     private static final String INVALID_BIDDER_CODE_LOGS = "invalid bidder code %s was set by the adapter %s for the account %s"
-    private static final Map AMX_CONFIG = ["adapters.amx.enabled" : "true",
-                                           "adapters.amx.endpoint": "$networkServiceContainer.rootUri/auction".toString()]
+    private static final PbsContainerConfig AMX_CONFIG = new PbsContainerConfig(["adapters.amx.enabled" : "true",
+                                           "adapters.amx.endpoint": "$networkServiceContainer.rootUri/auction".toString()])
     @Shared
     private static final PrebidServerService pbsServiceWithAmxBidder = pbsServiceFactory.getService(AMX_CONFIG)
 

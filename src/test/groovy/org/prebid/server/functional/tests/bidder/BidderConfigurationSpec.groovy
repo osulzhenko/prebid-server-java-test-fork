@@ -31,14 +31,14 @@ class BidderConfigurationSpec extends BaseSpec {
             "adapters.ix.enabled"             : "false"
     ]
 
-    private static final Map<String, String> BIDDER_CONFIG = [
-            "adapters.${GENERIC.value}.enabled"                                            : "true",
-            "adapters.${GENERIC.value}.meta-info.vendor-id"                                : "0",
+    private static final Map BIDDER_CONFIG = [
+            "adapters.${GENERIC.value}.enabled"                                            : true,
+            "adapters.${GENERIC.value}.meta-info.vendor-id"                                : 0,
 
-            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.enabled"                     : "true",
-            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.meta-info.vendor-id"         : "0",
-            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.modifying-vast-xml-allowed"  : "true",
-            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.pbs-enforces-ccpa"           : "true",
+            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.enabled"                     : true,
+            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.meta-info.vendor-id"         : 0,
+            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.modifying-vast-xml-allowed"  : true,
+            "adapters.${GENERIC.value}.aliases.${ALIAS.value}.pbs-enforces-ccpa"           : true,
 
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.enabled"                   : "true",
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.meta-info.vendor-id"       : "0",

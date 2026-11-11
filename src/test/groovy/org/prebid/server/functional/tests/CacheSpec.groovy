@@ -152,9 +152,6 @@ class CacheSpec extends BaseSpec {
 
         and: "PBS call shouldn't include api-key"
         assert !prebidCache.getRequestHeaders(bidRequest.imp[0].id)[PBS_API_HEADER]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should cache bids with api-key header when targeting is specified and api-key-secured enabled"() {
@@ -177,9 +174,6 @@ class CacheSpec extends BaseSpec {
 
         and: "PBS call should include api-key"
         assert prebidCache.getRequestHeaders(bidRequest.imp[0].id)[PBS_API_HEADER] == [apiKey]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should cache banner bids with cache key that include account and datacenter short name when append-trace-info-to-cache-id enabled"() {
@@ -215,9 +209,6 @@ class CacheSpec extends BaseSpec {
         def metrics = pbsService.sendCollectedMetricsRequest()
         assert metrics[ACCOUNT_JSON_CREATIVE_TTL_METRIC.formatted(bidRequest.accountId)] == bannerHostTtl
         assert metrics[ACCOUNT_REQUEST_OK_METRIC.formatted(bidRequest.accountId)] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should cache video bids with cache key that include account and datacenter short name when append-trace-info-to-cache-id enabled"() {
@@ -262,9 +253,6 @@ class CacheSpec extends BaseSpec {
         and: "PBS should include metrics prebid_cache_creative.{xml,json}.creative.ttl for general"
         assert metrics[JSON_CREATIVE_TTL_METRIC] == videoHostTtl
         assert metrics[XML_CREATIVE_TTL_METRIC] == videoHostTtl
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should cache bids with cache key that include account when append-trace-info-to-cache-id enabled and datacenter is null"() {
@@ -299,9 +287,6 @@ class CacheSpec extends BaseSpec {
         def metrics = pbsService.sendCollectedMetricsRequest()
         assert metrics[ACCOUNT_JSON_CREATIVE_TTL_METRIC.formatted(bidRequest.accountId)] == bannerHostTtl
         assert metrics[ACCOUNT_REQUEST_OK_METRIC.formatted(bidRequest.accountId)] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should cache bids without cache key when account ID is too large"() {
@@ -335,9 +320,6 @@ class CacheSpec extends BaseSpec {
         def metrics = pbsService.sendCollectedMetricsRequest()
         assert metrics[ACCOUNT_JSON_CREATIVE_TTL_METRIC.formatted(bidRequest.accountId)] == bannerHostTtl
         assert metrics[ACCOUNT_REQUEST_OK_METRIC.formatted(bidRequest.accountId)] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should cache bids without cache key when append-trace-info-to-cache-id disabled"() {
@@ -369,9 +351,6 @@ class CacheSpec extends BaseSpec {
         def metrics = pbsService.sendCollectedMetricsRequest()
         assert metrics[ACCOUNT_JSON_CREATIVE_TTL_METRIC.formatted(bidRequest.accountId)] == bannerHostTtl
         assert metrics[ACCOUNT_REQUEST_OK_METRIC.formatted(bidRequest.accountId)] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should not cache bids when targeting isn't specified"() {
@@ -507,9 +486,6 @@ class CacheSpec extends BaseSpec {
 
         and: "PBS shouldn't call PBC"
         assert prebidCache.getRequestCount(bidRequest.imp[0].id) == 0
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(INVALID_PREBID_CACHE_CONFIG)
     }
 
     def "PBS should cache bids and emit error when targeting is specified and config cache is valid and internal is invalid"() {
@@ -544,9 +520,6 @@ class CacheSpec extends BaseSpec {
         then: "Response should contain error"
         assert bidResponse.ext?.errors[CACHE]*.code == [999]
         assert bidResponse.ext?.errors[CACHE]*.message[0] == ("Failed to resolve '${CACHE_HOST.tokenize(":")[0]}' [A(1)]")
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(INVALID_PREBID_CACHE_CONFIG)
     }
 
     def "PBS should cache bids when targeting is specified and config cache is invalid and internal cache config valid"() {
@@ -583,9 +556,6 @@ class CacheSpec extends BaseSpec {
         and: "Debug should contain http call"
         assert bidResponse.ext.debug.httpcalls['cache'][0].uri ==
                 "${HTTPS_SCHEME}://${CACHE_HOST + CACHE_PATH}"
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(INVALID_PREBID_CACHE_CONFIG + VALID_INTERNAL_CACHE_CONFIG)
     }
 
     def "PBS should cache bids when targeting is specified and config cache and internal cache config valid"() {
@@ -619,9 +589,6 @@ class CacheSpec extends BaseSpec {
         and: "Debug should contain http call"
         assert bidResponse.ext.debug.httpcalls['cache'][0].uri ==
                 "${HTTP_SCHEME}://${networkServiceContainer.hostAndPort + INTERNAL_CACHE_PATH}"
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(VALID_INTERNAL_CACHE_CONFIG)
     }
 
     def "PBS should cache bids and add targeting values when account cache config #accountAuctionConfig"() {

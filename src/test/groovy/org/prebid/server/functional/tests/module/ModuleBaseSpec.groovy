@@ -12,6 +12,7 @@ import org.prebid.server.functional.model.db.Account
 import org.prebid.server.functional.model.response.auction.AnalyticResult
 import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.tests.BaseSpec
 import org.prebid.server.functional.util.PBSUtils
 
@@ -61,7 +62,7 @@ class ModuleBaseSpec extends BaseSpec {
                                                                      'pbc.api.key'                : PBSUtils.randomString,
                                                                      'cache.api-key-secured'      : 'false']
 
-    protected final static Map<String, String> EXTERNAL_MODULES_CONFIG = getModuleBaseSettings(PB_RICHMEDIA_FILTER) +
+    protected final static PbsContainerConfig EXTERNAL_MODULES_CONFIG = getModuleBaseSettings(PB_RICHMEDIA_FILTER) +
             getModuleBaseSettings(PB_RESPONSE_CORRECTION) +
             getModuleBaseSettings(PB_ORTB2_BLOCKING) +
             getModuleBaseSettings(PB_REQUEST_CORRECTION) +
@@ -98,10 +99,9 @@ class ModuleBaseSpec extends BaseSpec {
         "modules.module.${module.code}.stage.${stage.metricValue}.hook.${module.code}-${stage.value}-hook.execution-error"
     }
 
-    protected Map<String, String> getDefaultMultipleModulesConfig() {
-        ['datacenter-region': RANDOM_DATACENTER_REGION] +
+    protected PbsContainerConfig getDefaultMultipleModulesConfig() {
+        EXTERNAL_MODULES_CONFIG +
                 EMPTY_CACHE_TTL_CONFIG +
-                EXTERNAL_MODULES_CONFIG +
                 ENABLED_DEBUG_LOG_MODE +
                 ORTB_ADAPTER_CONFIG +
                 MODIFYING_VAST_CONFIG +
@@ -110,33 +110,34 @@ class ModuleBaseSpec extends BaseSpec {
                 IX_CONFIG +
                 AMX_CONFIG +
                 OPENX_CONFIG +
-                OPENX_ALIAS_CONFIG
+                OPENX_ALIAS_CONFIG +
+                ['datacenter-region': RANDOM_DATACENTER_REGION]
     }
 
-    protected static Map<String, String> getModuleBaseSettings(ModuleName name, boolean enabled = true) {
-        [("hooks.${name.code}.enabled".toString()): enabled.toString()]
+    protected static PbsContainerConfig getModuleBaseSettings(ModuleName name, boolean enabled = true) {
+        new PbsContainerConfig([("hooks.${name.code}.enabled".toString()): enabled.toString()])
     }
 
-    protected static Map<String, String> getRichMediaFilterSettings(String scriptPattern,
+    protected static PbsContainerConfig getRichMediaFilterSettings(String scriptPattern,
                                                                     boolean filterMraidEnabled = true) {
-        [
+       new PbsContainerConfig([
                 "hooks.${PB_RICHMEDIA_FILTER.code}.enabled"                     : true,
                 "hooks.modules.${PB_RICHMEDIA_FILTER.code}.mraid-script-pattern": scriptPattern,
                 "hooks.modules.${PB_RICHMEDIA_FILTER.code}.filter-mraid"        : filterMraidEnabled,
-        ].collectEntries { key, value -> [(key.toString()): value.toString()] }
+        ])
     }
 
-    protected static Map<String, String> getOptableTargetingSettings(boolean isEnabled = true) {
-        [
+    protected static PbsContainerConfig getOptableTargetingSettings(boolean isEnabled = true) {
+        new PbsContainerConfig([
                 "hooks.${OPTABLE_TARGETING.code}.enabled"             : isEnabled.toString(),
                 "hooks.modules.${OPTABLE_TARGETING.code}.api-endpoint": "${networkServiceContainer.rootUri}/stored-cache",
                 "hooks.modules.${OPTABLE_TARGETING.code}.tenant"      : PBSUtils.randomString,
                 "hooks.modules.${OPTABLE_TARGETING.code}.origin"      : PBSUtils.randomString
-        ].collectEntries { key, value -> [(key.toString()): value.toString()] }
+        ])
     }
 
-    protected static Map<String, String> getRulesEngineSettings() {
-        [
+    protected static PbsContainerConfig getRulesEngineSettings() {
+        new PbsContainerConfig([
                 "hooks.${PB_RULE_ENGINE.code}.enabled"                                : "true",
                 "hooks.${PB_RULE_ENGINE.code}.rule-cache.expire-after-minutes"        : "10000",
                 "hooks.${PB_RULE_ENGINE.code}.rule-cache.max-size"                    : "20000",
@@ -144,7 +145,21 @@ class ModuleBaseSpec extends BaseSpec {
                 "hooks.${PB_RULE_ENGINE.code}.rule-parsing.retry-max-delay-millis"    : "10000",
                 "hooks.${PB_RULE_ENGINE.code}.rule-parsing.retry-exponential-factor"  : "1.2",
                 "hooks.${PB_RULE_ENGINE.code}.rule-parsing.retry-exponential-jitter"  : "1.2"
-        ].collectEntries { key, value -> [(key.toString()): value.toString()] }
+        ])
+    }
+
+    private static Map<String, String> getAdapterConfig(BidderName bidder, Integer vendorId = null) {
+        [
+                "adapters.${bidder.value}.enabled" : 'true',
+                "adapters.${bidder.value}.endpoint": "${networkServiceContainer.rootUri}/auction"
+        ] + (vendorId != null ? ["adapters.${bidder.value}.meta-info.vendor-id": vendorId] : [:])
+    }
+
+    private static Map<String, String> getAdapterConfig(BidderName bidder, BidderName alias, Integer vendorId = null) {
+        [
+                "adapters.${bidder.value}.aliases.${alias.value}.enabled" : 'true',
+                "adapters.${bidder.value}.aliases.${alias.value}.endpoint": "${networkServiceContainer.rootUri}/auction"
+        ] + (vendorId != null ? ["adapters.${bidder.value}.aliases.${alias.value}.meta-info.vendor-id": vendorId] : [:])
     }
 
     protected static Account getAccountWithModuleConfig(String accountId,
@@ -161,21 +176,5 @@ class ModuleBaseSpec extends BaseSpec {
         response.ext.prebid.modules?.trace?.stages?.first()
                 ?.outcomes?.first()?.groups?.first()
                 ?.invocationResults?.first()?.analyticsTags?.activities
-    }
-
-    private static Map<String, String> getAdapterConfig(BidderName bidder, Integer vendorId = null) {
-        ([
-                "adapters.${bidder.value}.enabled": 'true',
-                "adapters.${bidder.value}.endpoint": "${networkServiceContainer.rootUri}/auction"
-        ] + (vendorId != null ? ["adapters.${bidder.value}.meta-info.vendor-id": vendorId] : [:]))
-                .collectEntries { k, v -> [(k.toString()): v.toString()] }
-    }
-
-    private static Map<String, String> getAdapterConfig(BidderName bidder, BidderName alias, Integer vendorId = null) {
-        ([
-                "adapters.${bidder.value}.aliases.${alias.value}.enabled": 'true',
-                "adapters.${bidder.value}.aliases.${alias.value}.endpoint": "${networkServiceContainer.rootUri}/auction"
-        ] + (vendorId != null ? ["adapters.${bidder.value}.aliases.${alias.value}.meta-info.vendor-id": vendorId] : [:]))
-                .collectEntries { k, v -> [(k.toString()): v.toString()] }
     }
 }

@@ -337,9 +337,6 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         assert getLogsByText(logs, "Created new TCF 2 vendor list for version " +
                 "v${tcfPolicyVersion.vendorListVersion}.${tcfPolicyVersion.vendorListVersion}")
 
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(config)
-
         where:
         tcfPolicyVersion << [TCF_POLICY_V2, TCF_POLICY_V4, TCF_POLICY_V5]
     }
@@ -439,9 +436,6 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
 
         and: "Reset vendor list response"
         vendorListResponse.reset()
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(GENERAL_PRIVACY_CONFIG)
 
         where:
         tcfPolicyVersion << [TCF_POLICY_V2, TCF_POLICY_V4, TCF_POLICY_V5]
@@ -855,9 +849,6 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         def vendorList = defaultPrivacyPbsService.getValueFromContainer(properVendorListPath, VendorListConsent.class)
         assert vendorList.gvlSpecificationVersion == V3
 
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(GENERAL_PRIVACY_CONFIG)
-
         where:
         tcfPolicyVersion << [TCF_POLICY_V4, TCF_POLICY_V5]
     }
@@ -1190,9 +1181,6 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         def metrics = pbsWithLiveGvlSetup.sendCollectedMetricsRequest()
         assert !metrics[TEMPLATE_ADAPTER_DISALLOWED_COUNT.getValue(bidRequest, FETCH_BIDS)]
 
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(REFRESH_LIVE_VENDOR_LIST_CONFIG)
-
         where:
         gvlDeletedDate << [null, ZonedDateTime.now().plusYears(1)]
     }
@@ -1248,9 +1236,6 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         def metrics = pbsWithLiveGvlSetup.sendCollectedMetricsRequest()
         assert metrics[TEMPLATE_ADAPTER_DISALLOWED_COUNT.getValue(bidRequest, FETCH_BIDS)] == 1
 
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(REFRESH_LIVE_VENDOR_LIST_CONFIG)
-
         where:
         liveGvlDeletedDate                  | requestGvlDeletedDate
         ZonedDateTime.now().minusSeconds(1) | ZonedDateTime.now().plusYears(1)
@@ -1304,9 +1289,6 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         and: "Disallowed metrics should be updated"
         def metrics = pbsWithLiveGvlSetup.sendCollectedMetricsRequest()
         assert metrics[TEMPLATE_ADAPTER_DISALLOWED_COUNT.getValue(bidRequest, FETCH_BIDS)] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(REFRESH_LIVE_VENDOR_LIST_CONFIG)
     }
 
     def "PBS should treat vendor as valid when deleted only in intermediate GVL versions"() {
@@ -1369,9 +1351,6 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         and: "Disallowed metrics shouldn't be updated"
         def metrics = pbsWithLiveGvlSetup.sendCollectedMetricsRequest()
         assert metrics[TEMPLATE_ADAPTER_DISALLOWED_COUNT.getValue(bidRequest, FETCH_BIDS)] == 0
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(config)
     }
 
     private static void downloadLiveGvtList(

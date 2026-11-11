@@ -51,7 +51,7 @@ jobs:
 
       - name: Emitting run result of functional test
         if: always()
-        uses: dorny/test-reporter@v3
+        uses: dorny/test-reporter@v2.5.0
         with:
           name: 'Module functional tests'
           working-directory: 'target/failsafe-reports'

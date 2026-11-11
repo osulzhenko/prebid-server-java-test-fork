@@ -160,9 +160,6 @@ class SetUidSpec extends BaseSpec {
         then: "Response should contain requested tempUIDs"
         assert response.uidsCookie.tempUIDs[GENERIC]
         assert response.uidsCookie.tempUIDs[MAGNITE]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid should return prioritized uids bidder when size is full"() {
@@ -188,9 +185,6 @@ class SetUidSpec extends BaseSpec {
         then: "Response should contain uids cookies"
         assert response.uidsCookie.tempUIDs[magniteBidder]
         assert response.uidsCookie.tempUIDs[genericBidder]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid should remove most distant expiration bidder when size is full"() {
@@ -219,9 +213,6 @@ class SetUidSpec extends BaseSpec {
         then: "Response should contain uids cookies"
         assert response.uidsCookie.tempUIDs[MAGNITE]
         assert response.uidsCookie.tempUIDs[GENERIC]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid should ignore requested bidder and log metric when cookie's filled and requested bidder not in prioritize list"() {
@@ -251,9 +242,6 @@ class SetUidSpec extends BaseSpec {
         and: "Response should contain uids cookies"
         assert response.uidsCookie.tempUIDs[APPNEXUS]
         assert response.uidsCookie.tempUIDs[MAGNITE]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid should reject bidder when cookie's filled and requested bidder in pri and rejected by tcf"() {
@@ -284,9 +272,6 @@ class SetUidSpec extends BaseSpec {
         and: "usersync.BIDDER.tcf.blocked metric should be updated"
         def metric = prebidServerService.sendCollectedMetricsRequest()
         assert metric["usersync.${MAGNITE.value}.tcf.blocked"] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid should remove most distant expiration uid and log metric when cookie's filled and this uid's not on the pri"() {
@@ -317,9 +302,6 @@ class SetUidSpec extends BaseSpec {
         then: "Response should contain uids cookies"
         assert response.uidsCookie.tempUIDs[APPNEXUS]
         assert response.uidsCookie.tempUIDs[GENERIC]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS set uid should emit sizeblocked metric and remove most distant expiration bidder from uids cookie for non-prioritized bidder"() {
@@ -360,9 +342,6 @@ class SetUidSpec extends BaseSpec {
 
         and: "usersync.BIDDER.sets metric should be updated"
         assert metricsRequest["usersync.${OPENX.value}.sets"] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS set uid should emit sizedout metric and remove most distant expiration bidder from uids cookie in prioritized bidder"() {
@@ -396,9 +375,6 @@ class SetUidSpec extends BaseSpec {
         and: "usersync.FAMILY.sizedout metric should be updated"
         def metricsRequest = prebidServerService.sendCollectedMetricsRequest()
         assert metricsRequest["usersync.${APPNEXUS.value}.sizedout"] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS  setuid should reject request when requested bidder mismatching with cookie-family-name"() {
@@ -499,9 +475,6 @@ class SetUidSpec extends BaseSpec {
 
         then: "Response should contain requested tempUIDs"
         assert response.uidsCookie.tempUIDs.keySet() == new LinkedHashSet([GENERIC, OPENX, APPNEXUS, MAGNITE])
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should remove duplicates when incoming cookie-family already exists in the working list"() {

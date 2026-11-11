@@ -47,9 +47,6 @@ class AccountSpec extends BaseSpec {
         def logsByTime = pbsService.getLogsByTime(start)
         assert getLogsByText(logsByTime, warningMessage).size() == 1
 
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
-
         where:
         enforceValidAccount << [true, false]
     }
@@ -84,9 +81,6 @@ class AccountSpec extends BaseSpec {
         and: "PBs shouldn't emit warning logs"
         def logsByTime = pbsService.getLogsByTime(start)
         assert !getLogsByText(logsByTime, warningMessage)
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should reject request with unknown account when settings.enforce-valid-account = true"() {

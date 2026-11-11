@@ -13,6 +13,7 @@ import org.prebid.server.functional.model.request.auction.StoredBidResponse
 import org.prebid.server.functional.model.response.auction.AnalyticResult
 import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.tests.module.ModuleBaseSpec
 import org.prebid.server.functional.util.PBSUtils
 
@@ -27,12 +28,12 @@ class PbRichMediaFilterSpec extends ModuleBaseSpec {
 
     private static final String PATTERN_NAME = PBSUtils.randomString
     private static final String PATTERN_NAME_ACCOUNT = PBSUtils.randomString
-    private static final Map<String, String> DISABLED_FILTER_SPECIFIC_PATTERN_NAME_CONFIG = getRichMediaFilterSettings(PATTERN_NAME, false)
-    private static final Map<String, String> SPECIFIC_PATTERN_NAME_CONFIG = getRichMediaFilterSettings(PATTERN_NAME)
-    private static final Map<String, String> SNAKE_SPECIFIC_PATTERN_NAME_CONFIG = (getRichMediaFilterSettings(PATTERN_NAME) +
+    private static final PbsContainerConfig DISABLED_FILTER_SPECIFIC_PATTERN_NAME_CONFIG = getRichMediaFilterSettings(PATTERN_NAME, false)
+    private static final PbsContainerConfig SPECIFIC_PATTERN_NAME_CONFIG = getRichMediaFilterSettings(PATTERN_NAME)
+    private static final PbsContainerConfig SNAKE_SPECIFIC_PATTERN_NAME_CONFIG = getRichMediaFilterSettings(PATTERN_NAME) +
             ["hooks.host-execution-plan": encode(ExecutionPlan.getSingleEndpointExecutionPlan(AUCTION, PB_RICHMEDIA_FILTER, [ALL_PROCESSED_BID_RESPONSES]).tap {
                 endpoints.values().first().stages.values().first().groups.first.hookSequenceSnakeCase = [new HookId(moduleCodeSnakeCase: PB_RICHMEDIA_FILTER.code, hookImplCodeSnakeCase: "${PB_RICHMEDIA_FILTER.code}-${ALL_PROCESSED_BID_RESPONSES.value}-hook")]
-            })]).collectEntries { key, value -> [(key.toString()): value.toString()] }
+            })]
 
     private static PrebidServerService pbsServiceWithDisabledMediaFilter
     private static PrebidServerService pbsServiceWithEnabledMediaFilter
@@ -399,9 +400,6 @@ class PbRichMediaFilterSpec extends ModuleBaseSpec {
 
         and: "Response shouldn't contain analytics"
         assert !getAnalyticResults(response)
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
 
         where:
         admValue << [PATTERN_NAME, PATTERN_NAME_ACCOUNT]

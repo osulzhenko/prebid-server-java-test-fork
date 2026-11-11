@@ -14,6 +14,7 @@ import org.prebid.server.functional.repository.dao.StoredResponseDao
 import org.prebid.server.functional.service.PrebidServerService
 import org.prebid.server.functional.testcontainers.Dependencies
 import org.prebid.server.functional.testcontainers.PbsServiceFactory
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.testcontainers.scaffolding.Bidder
 import org.prebid.server.functional.testcontainers.scaffolding.PrebidCache
 import org.prebid.server.functional.testcontainers.scaffolding.VendorList
@@ -27,11 +28,12 @@ import static java.math.RoundingMode.DOWN
 import static java.math.RoundingMode.HALF_UP
 import static java.math.RoundingMode.UP
 import static org.prebid.server.functional.testcontainers.Dependencies.networkServiceContainer
+import static org.prebid.server.functional.testcontainers.PbsServiceFactory.ContainerPolicy.PERSISTENT
 import static org.prebid.server.functional.util.SystemProperties.DEFAULT_TIMEOUT
 
 abstract class BaseSpec extends Specification implements ObjectMapperWrapper {
 
-    protected static final PbsServiceFactory pbsServiceFactory = new PbsServiceFactory(networkServiceContainer)
+    protected static final PbsServiceFactory pbsServiceFactory = new PbsServiceFactory()
     protected static final Bidder bidder = new Bidder(networkServiceContainer)
     protected static final VendorList vendorList = new VendorList(networkServiceContainer)
     protected static final PrebidCache prebidCache = new PrebidCache(networkServiceContainer)
@@ -55,7 +57,7 @@ abstract class BaseSpec extends Specification implements ObjectMapperWrapper {
                                                                        "cache.default-ttl-seconds.native": "",
                                                                        "cache.default-ttl-seconds.audio" : ""]
 
-    protected static final PrebidServerService defaultPbsService = pbsServiceFactory.getService([:], [:], PbsServiceFactory.ContainerPolicy.GLOBAL)
+    protected static final PrebidServerService defaultPbsService = pbsServiceFactory.getService(new PbsContainerConfig(), PERSISTENT)
 
     def setupSpec() {
         prebidCache.setResponse()

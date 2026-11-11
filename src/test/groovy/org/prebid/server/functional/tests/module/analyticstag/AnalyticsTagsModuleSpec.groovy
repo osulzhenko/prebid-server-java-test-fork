@@ -121,7 +121,7 @@ class AnalyticsTagsModuleSpec extends ModuleBaseSpec {
         def accountConfig = new AccountConfig(hooks: hooksConfiguration, analytics: new AccountAnalyticsConfig(allowClientDetails: true))
 
         and: "Prebid server with proper default account"
-        def pbsConfig = ['settings.default-account-config': encode(accountConfig)] + getModuleBaseSettings(PB_ORTB2_BLOCKING)
+        def pbsConfig = getModuleBaseSettings(PB_ORTB2_BLOCKING) + ['settings.default-account-config': encode(accountConfig)]
         def pbsServiceWithDefaultAccount = pbsServiceFactory.getService(pbsConfig)
 
         and: "Bid request with enabled client details"
@@ -148,9 +148,6 @@ class AnalyticsTagsModuleSpec extends ModuleBaseSpec {
             it.appliedTo.bidders == [GENERIC.value]
             it.appliedTo.impIds == bidRequest.imp.id
         }
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should include analytics tag in response when request and account allow client details but default doesn't"() {
@@ -160,7 +157,7 @@ class AnalyticsTagsModuleSpec extends ModuleBaseSpec {
         def defaultAccountConfig = new AccountConfig(hooks: defaultHooksConfiguration, analytics: new AccountAnalyticsConfig(allowClientDetails: false))
 
         and: "Prebid server with proper default account"
-        def pbsConfig = ['settings.default-account-config': encode(defaultAccountConfig)] + getModuleBaseSettings(PB_ORTB2_BLOCKING)
+        def pbsConfig = getModuleBaseSettings(PB_ORTB2_BLOCKING) + ['settings.default-account-config': encode(defaultAccountConfig)]
         def pbsServiceWithDefaultAccount = pbsServiceFactory.getService(pbsConfig)
 
         and: "Bid request with enabled client details"
@@ -194,9 +191,6 @@ class AnalyticsTagsModuleSpec extends ModuleBaseSpec {
             it.appliedTo.bidders == [GENERIC.value]
             it.appliedTo.impIds == bidRequest.imp.id
         }
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should not include analytics tag in response without any warnings when timeout module disabled"() {

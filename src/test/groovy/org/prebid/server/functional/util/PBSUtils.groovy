@@ -2,6 +2,7 @@ package org.prebid.server.functional.util
 
 import org.apache.commons.lang3.RandomStringUtils
 import org.prebid.server.functional.model.request.auction.BidRequest
+import org.testcontainers.images.builder.Transferable
 
 import java.math.RoundingMode
 import java.nio.file.Files

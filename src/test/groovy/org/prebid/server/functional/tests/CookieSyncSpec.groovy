@@ -18,6 +18,7 @@ import org.prebid.server.functional.model.response.cookiesync.CookieSyncResponse
 import org.prebid.server.functional.model.response.cookiesync.UserSyncInfo
 import org.prebid.server.functional.service.PrebidServerException
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.HttpUtil
 import org.prebid.server.functional.util.PBSUtils
 import org.prebid.server.functional.util.privacy.CcpaConsent
@@ -102,13 +103,13 @@ class CookieSyncSpec extends BaseSpec {
             "adapters.${ADKERNEL.value}.aliases.152media.enabled" : "false"
     ]
 
-    private static final Map<String, String> PBS_CONFIG = APPNEXUS_CONFIG + MAGNITE_CONFIG + OPENX_CONFIG +
+    private static final PbsContainerConfig PBS_CONFIG = new PbsContainerConfig(APPNEXUS_CONFIG + MAGNITE_CONFIG + OPENX_CONFIG +
             GENERIC_CONFIG + ACEEX_CONFIG + AAX_CONFIG + ACUITYADS_CONFIG + ADKERNEL_CONFIG + BOGUS_CONFIG +
-            ["cookie-sync.pri": "grid, ix, adkernel"]
+            ["cookie-sync.pri": "grid, ix, adkernel"])
 
-    private final PrebidServerService pbsWithoutLimitService = pbsServiceFactory.getService(PBS_CONFIG)
-    private final PrebidServerService prebidServerService = pbsServiceFactory.getService(PBS_CONFIG + COOKIE_SYNC_CONFIG)
-    private final PrebidServerService pbsWithAliasService = pbsServiceFactory.getService(PBS_CONFIG + ALIAS_NO_FAMILY_CONFIG)
+    private static final PrebidServerService pbsWithoutLimitService = pbsServiceFactory.getService(PBS_CONFIG)
+    private static final PrebidServerService prebidServerService = pbsServiceFactory.getService(PBS_CONFIG + COOKIE_SYNC_CONFIG)
+    private static final PrebidServerService pbsWithAliasService = pbsServiceFactory.getService(PBS_CONFIG + ALIAS_NO_FAMILY_CONFIG)
 
     def cleanupSpec() {
         pbsServiceFactory.removeContainer(PBS_CONFIG)

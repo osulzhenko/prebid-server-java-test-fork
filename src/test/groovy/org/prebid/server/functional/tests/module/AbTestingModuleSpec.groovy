@@ -14,6 +14,7 @@ import org.prebid.server.functional.model.response.auction.AnalyticResult
 import org.prebid.server.functional.model.response.auction.InvocationResult
 import org.prebid.server.functional.model.response.auction.ModuleActivityName
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.PBSUtils
 
 import static org.prebid.server.functional.model.config.HookHttpEndpoint.AUCTION
@@ -39,14 +40,16 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
                                                                      (RAW_BIDDER_RESPONSE): [PB_ORTB2_BLOCKING]]
     private final static Map<Stage, List<ModuleName>> RESPONSE_STAGES = [(ALL_PROCESSED_BID_RESPONSES): [PB_RESPONSE_CORRECTION]]
     private final static Map<Stage, List<ModuleName>> MODULES_STAGES = ORTB_STAGES + RESPONSE_STAGES
+    private final static PbsContainerConfig PB_ORTB2_CONFIG = getModuleBaseSettings(PB_ORTB2_BLOCKING)
 
-    private final static Map<String, String> MULTI_MODULE_CONFIG = getModuleBaseSettings(PB_RESPONSE_CORRECTION) + getModuleBaseSettings(PB_ORTB2_BLOCKING) +
+    private final static PbsContainerConfig MULTI_MODULE_CONFIG = getModuleBaseSettings(PB_RESPONSE_CORRECTION) +
+            getModuleBaseSettings(PB_ORTB2_BLOCKING) +
             ['hooks.host-execution-plan': null]
 
-    private static final PrebidServerService ortbModulePbsService = pbsServiceFactory.getService(getModuleBaseSettings(PB_ORTB2_BLOCKING))
+    private static final PrebidServerService ortbModulePbsService = pbsServiceFactory.getService(PB_ORTB2_CONFIG)
 
     def cleanupSpec() {
-        pbsServiceFactory.removeContainer(getModuleBaseSettings(PB_ORTB2_BLOCKING))
+        pbsServiceFactory.removeContainer(PB_ORTB2_CONFIG)
     }
 
     def "PBS shouldn't apply a/b test config when config of ab test is disabled"() {
@@ -133,9 +136,6 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
 
         assert !metrics[NO_INVOCATION_METRIC(PB_ORTB2_BLOCKING, BIDDER_REQUEST)]
         assert !metrics[NO_INVOCATION_METRIC(PB_ORTB2_BLOCKING, RAW_BIDDER_RESPONSE)]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS shouldn't apply a/b test config when module name is not matched"() {
@@ -814,9 +814,6 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
 
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
-
         where:
         accouns << [null, []]
     }
@@ -876,9 +873,6 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
 
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should apply a/b test config from host config for specific account and general config when account config and default account doesn't include a/b test config"() {
@@ -943,9 +937,6 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
         assert !metrics[CALL_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
         assert metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)] == 1
         assert metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)] == 1
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS shouldn't apply a/b test config from host config for non specified accounts when account config and default account doesn't include a/b test config"() {
@@ -1005,9 +996,6 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
 
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should prioritise a/b test config from default account and only specified module when host and default account contains a/b test configs"() {
@@ -1069,9 +1057,6 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
 
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should prioritise a/b test config from account over default account and only specified module when specific account and default account contains a/b test configs"() {
@@ -1140,9 +1125,6 @@ class AbTestingModuleSpec extends ModuleBaseSpec {
 
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
         assert !metrics[NO_INVOCATION_METRIC(PB_RESPONSE_CORRECTION, ALL_PROCESSED_BID_RESPONSES)]
-
-        cleanup: "Stop and remove pbs container"
-        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     private static List<InvocationResult> filterInvocationResultsByModule(List<InvocationResult> invocationResults, ModuleName moduleName) {
