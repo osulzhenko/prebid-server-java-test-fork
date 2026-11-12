@@ -66,17 +66,23 @@ class TargetingSpec extends BaseSpec {
     private static final String EMPTY_CPM = "0.0"
     private static final Integer DEFAULT_TRUNCATE_CHARS = 20
     private static final Integer EXTENDED_TRUNCATE_CHARS = PbsConfig.targetingConfig.get('settings.targeting.truncate-attr-chars').toInteger()
-    private static final PbsContainerConfig EMPTY_TARGETING_CONFIG = new PbsContainerConfig(['settings.targeting.truncate-attr-chars': null])
-    private static final PbsContainerConfig ONLY_WINNING_BIDS_CONFIG = new PbsContainerConfig(["auction.cache.only-winning-bids": "true"])
-    private static final PbsContainerConfig DISABLED_ONLY_WINNING_BIDS_CONFIG = new PbsContainerConfig(["auction.cache.only-winning-bids": "false"])
     private static final String DROP_PREFIX_WARNING = "Key prefix value is dropped to default. " +
             "Decrease custom prefix length or increase truncateattrchars by %s"
     private static final String TRUNCATED_WARNING = "The following keys have been truncated:"
 
-    private static final PrebidServerService pbsWithDefaultTargetingLength = pbsServiceFactory.getService(EMPTY_TARGETING_CONFIG)
-    private static final PrebidServerService pbsWithOnlyWinningBids = pbsServiceFactory.getService(EMPTY_TARGETING_CONFIG + ONLY_WINNING_BIDS_CONFIG)
-    private static final PrebidServerService pbsWithDisabledOnlyWinningBids = pbsServiceFactory.getService(EMPTY_TARGETING_CONFIG + DISABLED_ONLY_WINNING_BIDS_CONFIG)
+    private static final PbsContainerConfig EMPTY_TARGETING_CONFIG = new PbsContainerConfig(['settings.targeting.truncate-attr-chars': null])
+    private static final PbsContainerConfig ONLY_WINNING_BIDS_CONFIG = EMPTY_TARGETING_CONFIG + ['auction.cache.only-winning-bids': 'true']
+    private static final PbsContainerConfig DISABLED_ONLY_WINNING_BIDS_CONFIG = EMPTY_TARGETING_CONFIG + ['auction.cache.only-winning-bids': 'false']
 
+    private static PrebidServerService pbsWithDefaultTargetingLength
+    private static PrebidServerService pbsWithOnlyWinningBids
+    private static PrebidServerService pbsWithDisabledOnlyWinningBids
+
+    def setupSpec() {
+        pbsWithDefaultTargetingLength = pbsServiceFactory.getService(EMPTY_TARGETING_CONFIG)
+        pbsWithOnlyWinningBids = pbsServiceFactory.getService(ONLY_WINNING_BIDS_CONFIG)
+        pbsWithDisabledOnlyWinningBids = pbsServiceFactory.getService(DISABLED_ONLY_WINNING_BIDS_CONFIG)
+    }
     def cleanupSpec() {
         pbsServiceFactory.removeContainer(EMPTY_TARGETING_CONFIG + ONLY_WINNING_BIDS_CONFIG)
         pbsServiceFactory.removeContainer(EMPTY_TARGETING_CONFIG + DISABLED_ONLY_WINNING_BIDS_CONFIG)
@@ -433,7 +439,7 @@ class TargetingSpec extends BaseSpec {
         def pbsConfig = new PbsContainerConfig([
                 "adapters.openx.enabled" : "true",
                 "adapters.openx.endpoint": "$networkServiceContainer.rootUri/auction".toString()])
-        def pbsWithDefaultTargetingLength = pbsServiceFactory.getService(pbsConfig)
+        def pbsWithOpenx = pbsServiceFactory.getService(pbsConfig)
 
         and: "Default bid request"
         def accountId = PBSUtils.randomNumber as String
@@ -450,7 +456,7 @@ class TargetingSpec extends BaseSpec {
         accountDao.save(account)
 
         when: "PBS processes auction request"
-        def response = pbsWithDefaultTargetingLength.sendAuctionRequest(bidRequest)
+        def response = pbsWithOpenx.sendAuctionRequest(bidRequest)
 
         then: "Response should contain targeting with corresponding length"
         assert response.seatbid.bid.ext.prebid.targeting
@@ -461,6 +467,9 @@ class TargetingSpec extends BaseSpec {
         and: "Bidder request should contain ext.prebid.adservertargeting"
         def bidderRequest = bidder.getBidderRequests(bidRequest.id)
         assert bidderRequest.ext.prebid.targeting
+
+        cleanup:
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should truncate targeting corresponding to value in account config when in account define truncate target attr"() {
@@ -1293,6 +1302,9 @@ class TargetingSpec extends BaseSpec {
         then: "BidderRequest should include price granularity from account config"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
         assert bidderRequest?.ext?.prebid?.targeting?.priceGranularity == PriceGranularity.getDefault(priceGranularity)
+
+        cleanup:
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS auction should include include default price granularity when original request and account config doesn't contain price granularity"() {

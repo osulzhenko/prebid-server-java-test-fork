@@ -16,6 +16,7 @@ import org.prebid.server.functional.model.request.auction.RegsExt
 import org.prebid.server.functional.model.response.auction.ErrorType
 import org.prebid.server.functional.model.response.auction.NoBidResponse
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.testcontainers.scaffolding.VendorList
 import org.prebid.server.functional.tests.privacy.PrivacyBaseSpec
 import org.prebid.server.functional.util.PBSUtils
@@ -63,7 +64,7 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
 
     private static final String LIVE_GVL_FILE_NAME = "live-gvl-vendor-list.json"
     private static final VENDOR_LIST_VERSION = PBSUtils.getRandomNumber(2, 4094)
-    private static final Map<String, String> REFRESH_LIVE_VENDOR_LIST_CONFIG = GENERAL_PRIVACY_CONFIG +
+    private static final PbsContainerConfig REFRESH_LIVE_VENDOR_LIST_CONFIG = GENERAL_PRIVACY_CONFIG +
             ["gdpr.vendorlist.live.url": "$networkServiceContainer.rootUri/v3/$LIVE_GVL_FILE_NAME".toString()]
     private static final VendorList liveVendorListResponse = new VendorList(networkServiceContainer, LIVE_GVL_FILE_NAME)
 
@@ -1181,6 +1182,9 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         def metrics = pbsWithLiveGvlSetup.sendCollectedMetricsRequest()
         assert !metrics[TEMPLATE_ADAPTER_DISALLOWED_COUNT.getValue(bidRequest, FETCH_BIDS)]
 
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(REFRESH_LIVE_VENDOR_LIST_CONFIG)
+
         where:
         gvlDeletedDate << [null, ZonedDateTime.now().plusYears(1)]
     }
@@ -1236,6 +1240,9 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         def metrics = pbsWithLiveGvlSetup.sendCollectedMetricsRequest()
         assert metrics[TEMPLATE_ADAPTER_DISALLOWED_COUNT.getValue(bidRequest, FETCH_BIDS)] == 1
 
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(REFRESH_LIVE_VENDOR_LIST_CONFIG)
+
         where:
         liveGvlDeletedDate                  | requestGvlDeletedDate
         ZonedDateTime.now().minusSeconds(1) | ZonedDateTime.now().plusYears(1)
@@ -1289,6 +1296,9 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         and: "Disallowed metrics should be updated"
         def metrics = pbsWithLiveGvlSetup.sendCollectedMetricsRequest()
         assert metrics[TEMPLATE_ADAPTER_DISALLOWED_COUNT.getValue(bidRequest, FETCH_BIDS)] == 1
+
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(REFRESH_LIVE_VENDOR_LIST_CONFIG)
     }
 
     def "PBS should treat vendor as valid when deleted only in intermediate GVL versions"() {

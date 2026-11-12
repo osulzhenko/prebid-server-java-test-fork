@@ -26,8 +26,8 @@ import static org.prebid.server.functional.model.request.auction.TraceLevel.VERB
 
 class TransmitEidsOrtbConverterActivitiesSpec extends TcfBaseSpec {
 
-    private final static PbsContainerConfig ORTB_2_5_TCF_CONFIG = new PbsContainerConfig(TCF_BASE_CONFIG + ["adapters.generic.ortb-version": "2.5"])
-    private final static PbsContainerConfig ORTB_2_5_FULL_TCF_CONFIG = new PbsContainerConfig(TCF_BASE_CONFIG + ["adapters.generic.ortb-version": "2.5"], GVL_LISTS_FILES)
+    private final static PbsContainerConfig ORTB_2_5_TCF_CONFIG = TCF_BASE_CONFIG + ["adapters.generic.ortb-version": "2.5"]
+    private final static PbsContainerConfig ORTB_2_5_FULL_TCF_CONFIG = TCF_BASE_CONFIG.withFiles(GVL_LISTS_FILES) + ["adapters.generic.ortb-version": "2.5"]
     private static PrebidServerService activityPbsServiceExcludeGvlWithElderOrtb
     private static PrebidServerService privacyPbsServiceWithMultipleGvlWithElderOrtb
 

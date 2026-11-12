@@ -21,25 +21,20 @@ import static org.prebid.server.functional.util.privacy.TcfConsent.GENERIC_VENDO
 
 class TcfGeneralSpec extends TcfBaseSpec {
 
-
     private static final ZonedDateTime TCF_2_3_ENFORCEMENT_DATE = ZonedDateTime.parse("2026-03-01T00:00:00Z")
+    private final static TCF_NO_DISCLOSED_VENDORS_METRIC = 'privacy.tcf.no-disclosed-vendors'
+    private final static DISCLOSED_VENDORS_MESSAGE = 'Invalid TCF string: `disclosedVendors` list is empty.'
 
-    private static final PbsContainerConfig STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG = TCF_BASE_CONFIG +
-            ['gdpr.strict-disclosed-vendors-treatment': 'true']
-
-    private static final PbsContainerConfig BASE_STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG = STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG +
-            VENDOR_LIST_EMPTY_CONFIG
-
+    private static final PbsContainerConfig STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG = TCF_BASE_CONFIG + ['gdpr.strict-disclosed-vendors-treatment': 'true']
+    private static final PbsContainerConfig BASE_STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG = STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG + VENDOR_LIST_EMPTY_CONFIG
     private static final PbsContainerConfig FULL_STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG = STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG.withFiles(GVL_LISTS_FILES)
 
     private static PrebidServerService pbsWithoutGvlVendorsWithStrictDvTreatment
     private static PrebidServerService pbsWithMultipleGvlListsWithStrictDvTreatment
 
     def setupSpec() {
-        pbsWithoutGvlVendorsWithStrictDvTreatment =
-                pbsServiceFactory.getService(BASE_STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG)
-        pbsWithMultipleGvlListsWithStrictDvTreatment =
-                pbsServiceFactory.getService(FULL_STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG)
+        pbsWithoutGvlVendorsWithStrictDvTreatment = pbsServiceFactory.getService(BASE_STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG)
+        pbsWithMultipleGvlListsWithStrictDvTreatment = pbsServiceFactory.getService(FULL_STRICT_DISCLOSED_VENDOR_TREATMENT_CONFIG)
     }
 
     def cleanupSpec() {

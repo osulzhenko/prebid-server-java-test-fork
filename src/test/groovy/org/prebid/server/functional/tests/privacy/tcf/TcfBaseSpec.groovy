@@ -27,26 +27,20 @@ import static org.prebid.server.functional.util.privacy.TcfConsent.RestrictionTy
 class TcfBaseSpec extends PrivacyBaseSpec {
 
     protected static final int PURPOSES_ONLY_GVL_VERSION = PBSUtils.getRandomNumber(0, 4095)
-    protected static final int LEG_INT_PURPOSES_ONLY_GVL_VERSION =
-            PBSUtils.getRandomNumberWithExclusion(PURPOSES_ONLY_GVL_VERSION, 0, 4095)
-    protected static final int LEG_INT_AND_FLEXIBLE_PURPOSES_GVL_VERSION =
-            PBSUtils.getRandomNumberWithExclusion(
-                    [PURPOSES_ONLY_GVL_VERSION, LEG_INT_PURPOSES_ONLY_GVL_VERSION], 0, 4095)
-    protected static final int PURPOSES_AND_FLEXIBLE_PURPOSES_GVL_VERSION =
-            PBSUtils.getRandomNumberWithExclusion(
-                    [PURPOSES_ONLY_GVL_VERSION, LEG_INT_PURPOSES_ONLY_GVL_VERSION,
-                     LEG_INT_AND_FLEXIBLE_PURPOSES_GVL_VERSION], 0, 4095)
+    protected static final int LEG_INT_PURPOSES_ONLY_GVL_VERSION = PBSUtils.getRandomNumberWithExclusion(PURPOSES_ONLY_GVL_VERSION, 0, 4095)
+    protected static final int LEG_INT_AND_FLEXIBLE_PURPOSES_GVL_VERSION = PBSUtils.getRandomNumberWithExclusion(
+            [PURPOSES_ONLY_GVL_VERSION, LEG_INT_PURPOSES_ONLY_GVL_VERSION], 0, 4095)
+    protected static final int PURPOSES_AND_FLEXIBLE_PURPOSES_GVL_VERSION = PBSUtils.getRandomNumberWithExclusion(
+            [PURPOSES_ONLY_GVL_VERSION, LEG_INT_PURPOSES_ONLY_GVL_VERSION, LEG_INT_AND_FLEXIBLE_PURPOSES_GVL_VERSION], 0, 4095)
 
     protected static final Map<String, Transferable> GVL_LISTS_FILES = [
-            (getVendorListPath(PURPOSES_ONLY_GVL_VERSION))                : Transferable.of(getVendorListContent(true, false, false)),
-            (getVendorListPath(LEG_INT_PURPOSES_ONLY_GVL_VERSION))        : Transferable.of(getVendorListContent(false, true, false)),
-            (getVendorListPath(LEG_INT_AND_FLEXIBLE_PURPOSES_GVL_VERSION)): Transferable.of(getVendorListContent(false, true, true)),
+            (getVendorListPath(PURPOSES_ONLY_GVL_VERSION))                 : Transferable.of(getVendorListContent(true, false, false)),
+            (getVendorListPath(LEG_INT_PURPOSES_ONLY_GVL_VERSION))         : Transferable.of(getVendorListContent(false, true, false)),
+            (getVendorListPath(LEG_INT_AND_FLEXIBLE_PURPOSES_GVL_VERSION)) : Transferable.of(getVendorListContent(false, true, true)),
             (getVendorListPath(PURPOSES_AND_FLEXIBLE_PURPOSES_GVL_VERSION)): Transferable.of(getVendorListContent(true, false, true))
     ].asImmutable()
 
-    private static final Map<String, String> GDPR_RESTRICTION_CONFIG = [
-            'gdpr.strict-disclosed-vendors-treatment': 'false'
-    ]
+    private static final Map<String, String> GDPR_RESTRICTION_CONFIG = ['gdpr.strict-disclosed-vendors-treatment': 'false']
 
     protected static final PbsContainerConfig VENDOR_LIST_EMPTY_CONFIG = new PbsContainerConfig([
             'gdpr.vendorlist.v2.http-endpoint-template': null,

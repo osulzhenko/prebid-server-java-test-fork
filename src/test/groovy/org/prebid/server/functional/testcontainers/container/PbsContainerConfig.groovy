@@ -20,6 +20,9 @@ class PbsContainerConfig {
     }
 
     PbsContainerConfig plus(Map<?, ?> properties) {
+        if (properties.values().any { it instanceof Transferable }) {
+            throw new IllegalArgumentException("Use withFiles() to add container files")
+        }
         new PbsContainerConfig(
                 [:] << extraProperties << properties,
                 additionalFiles

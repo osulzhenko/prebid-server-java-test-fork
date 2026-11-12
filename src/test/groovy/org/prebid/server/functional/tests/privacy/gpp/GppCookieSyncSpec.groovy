@@ -276,6 +276,9 @@ class GppCookieSyncSpec extends BaseSpec {
         assert HttpUtil.findUrlParameterValue(bidderStatus.userSync?.url, "gpp") == gpp
         assert HttpUtil.findUrlParameterValue(bidderStatus.userSync?.url, "gpp_sid") == gppSid
 
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(pbsConfig)
+
         where:
         userSyncFormat << [REDIRECT, IFRAME]
     }
@@ -439,6 +442,9 @@ class GppCookieSyncSpec extends BaseSpec {
 
         and: "Response shouldn't contains any error"
         assert !bidderStatus.error
+
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS shouldn't emit error message when request does contain gdpr config and global skip gdpr config default for adapter"() {

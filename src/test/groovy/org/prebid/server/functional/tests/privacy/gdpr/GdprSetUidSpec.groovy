@@ -26,20 +26,25 @@ import static org.prebid.server.functional.model.config.PurposeEnforcement.FULL
 import static org.prebid.server.functional.model.config.PurposeEnforcement.NO
 import static org.prebid.server.functional.model.request.setuid.UidWithExpiry.getDefaultUidWithExpiry
 import static org.prebid.server.functional.model.response.cookiesync.UserSyncInfo.Type.REDIRECT
+import static org.prebid.server.functional.testcontainers.Dependencies.networkServiceContainer
 import static org.prebid.server.functional.util.privacy.TcfConsent.GENERIC_VENDOR_ID
 import static org.prebid.server.functional.util.privacy.TcfConsent.PurposeId.DEVICE_ACCESS
 
 class GdprSetUidSpec extends PrivacyBaseSpec {
 
-    private static final String USER_SYNC_URL = "$Dependencies.networkServiceContainer.rootUri/generic-usersync"
+    private static final String USER_SYNC_URL = "$networkServiceContainer.rootUri/generic-usersync"
     private static final UserSyncInfo.Type USER_SYNC_TYPE = REDIRECT
     private static final PbsContainerConfig VENDOR_GENERIC_PBS_CONFIG = new PbsContainerConfig(GENERIC_VENDOR_CONFIG +
-            ["gdpr.purposes.p1.enforce-purpose"                                       : NO.value,
-             "adapters.${GENERIC.value}.usersync.${USER_SYNC_TYPE.value}.url"         : USER_SYNC_URL])
+            ["gdpr.purposes.p1.enforce-purpose"                              : NO.value,
+             "adapters.${GENERIC.value}.usersync.${USER_SYNC_TYPE.value}.url": USER_SYNC_URL])
     private static final String TCF_ERROR_MESSAGE = "The gdpr_consent param prevents cookies from being saved"
     private static final int UNAVAILABLE_FOR_LEGAL_REASONS_CODE = 451
 
-    private static final PrebidServerService prebidServerService = pbsServiceFactory.getService(VENDOR_GENERIC_PBS_CONFIG)
+    private static PrebidServerService prebidServerService
+
+    def setupSpec() {
+        prebidServerService = pbsServiceFactory.getService(VENDOR_GENERIC_PBS_CONFIG)
+    }
 
     def cleanupSpec() {
         pbsServiceFactory.removeContainer(VENDOR_GENERIC_PBS_CONFIG)
@@ -120,6 +125,9 @@ class GdprSetUidSpec extends PrivacyBaseSpec {
         assert response.uidsCookie.tempUIDs[GENER_X].uid == setuidRequest.uid
         assert response.responseBody ==
                 ResourceUtil.readByteArrayFromClassPath("org/prebid/server/functional/tracking-pixel.png")
+
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid should failed with tcf when dgpr value is invalid"() {
@@ -250,6 +258,9 @@ class GdprSetUidSpec extends PrivacyBaseSpec {
         and: "Metric should be increased usersync.BIDDER.tcf.blocked"
         def metric = prebidServerService.sendCollectedMetricsRequest()
         assert metric["usersync.${GENERIC.value}.tcf.blocked"] == 1
+
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid shouldn't failed with tcf when purpose access device not enforced for host and host-vendor-id empty"() {
@@ -294,6 +305,9 @@ class GdprSetUidSpec extends PrivacyBaseSpec {
         assert response.uidsCookie.tempUIDs[GENERIC].uid == setuidRequest.uid
         assert response.responseBody ==
                 ResourceUtil.readByteArrayFromClassPath("org/prebid/server/functional/tracking-pixel.png")
+
+        cleanup: "Stop and remove pbs container"
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS setuid shouldn't failed with purpose access device enforced for account when bidder included in vendorExceptions"() {
