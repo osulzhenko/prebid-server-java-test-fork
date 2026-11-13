@@ -11,7 +11,6 @@ import org.prebid.server.functional.model.request.cookiesync.CookieSyncRequest
 import org.prebid.server.functional.model.response.cookiesync.UserSyncInfo
 import org.prebid.server.functional.service.PrebidServerException
 import org.prebid.server.functional.service.PrebidServerService
-import org.prebid.server.functional.testcontainers.Dependencies
 import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.tests.BaseSpec
 import org.prebid.server.functional.util.HttpUtil
@@ -19,8 +18,8 @@ import org.prebid.server.functional.util.PBSUtils
 import org.prebid.server.functional.util.privacy.CcpaConsent
 import org.prebid.server.functional.util.privacy.TcfConsent
 import org.prebid.server.functional.util.privacy.gpp.v1.UsNatV1Consent
-import org.prebid.server.functional.util.privacy.gpp.v2.TcfEuV2Consent
 import org.prebid.server.functional.util.privacy.gpp.v1.UspV1Consent
+import org.prebid.server.functional.util.privacy.gpp.v2.TcfEuV2Consent
 
 import static org.prebid.server.functional.model.bidder.BidderName.ALIAS
 import static org.prebid.server.functional.model.bidder.BidderName.GENERIC

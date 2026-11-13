@@ -3,11 +3,8 @@ package org.prebid.server.functional.tests.module.pbruleengine
 import org.prebid.server.functional.model.bidder.BidderName
 import org.prebid.server.functional.model.bidder.Generic
 import org.prebid.server.functional.model.bidder.Openx
-import org.prebid.server.functional.model.config.AccountConfig
-import org.prebid.server.functional.model.config.AccountHooksConfiguration
 import org.prebid.server.functional.model.config.ModuleName
 import org.prebid.server.functional.model.config.PbRulesEngine
-import org.prebid.server.functional.model.config.PbsModulesConfig
 import org.prebid.server.functional.model.config.Stage
 import org.prebid.server.functional.model.db.Account
 import org.prebid.server.functional.model.pricefloors.Country
@@ -18,10 +15,8 @@ import org.prebid.server.functional.model.request.auction.DistributionChannel
 import org.prebid.server.functional.model.request.auction.Geo
 import org.prebid.server.functional.model.request.auction.Imp
 import org.prebid.server.functional.model.request.auction.ImpUnitCode
-import org.prebid.server.functional.service.PrebidServerService
 import org.prebid.server.functional.tests.module.ModuleBaseSpec
 import org.prebid.server.functional.util.PBSUtils
-import spock.lang.Retry
 
 import static org.prebid.server.functional.model.bidder.BidderName.ALIAS
 import static org.prebid.server.functional.model.bidder.BidderName.AMX
@@ -37,8 +32,6 @@ import static org.prebid.server.functional.model.request.auction.ImpUnitCode.PB_
 import static org.prebid.server.functional.model.request.auction.ImpUnitCode.STORED_REQUEST
 import static org.prebid.server.functional.model.request.auction.ImpUnitCode.TAG_ID
 import static org.prebid.server.functional.model.request.auction.TraceLevel.VERBOSE
-import static org.prebid.server.functional.testcontainers.Dependencies.getNetworkServiceContainer
-import static org.prebid.server.functional.util.privacy.TcfConsent.GENERIC_VENDOR_ID
 
 abstract class PbRuleEngineBaseSpec extends ModuleBaseSpec {
 

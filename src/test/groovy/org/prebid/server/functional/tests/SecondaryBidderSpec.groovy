@@ -12,11 +12,10 @@ import org.prebid.server.functional.service.PrebidServerService
 import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.testcontainers.scaffolding.Bidder
 import org.prebid.server.functional.util.PBSUtils
-import spock.lang.Shared
 
 import static org.prebid.server.functional.model.bidder.BidderName.ALIAS
-import static org.prebid.server.functional.model.bidder.BidderName.OPENX
 import static org.prebid.server.functional.model.bidder.BidderName.GENERIC
+import static org.prebid.server.functional.model.bidder.BidderName.OPENX
 import static org.prebid.server.functional.model.bidder.BidderName.UNKNOWN
 import static org.prebid.server.functional.model.response.auction.BidRejectionReason.ERROR_TIMED_OUT
 import static org.prebid.server.functional.testcontainers.Dependencies.getNetworkServiceContainer

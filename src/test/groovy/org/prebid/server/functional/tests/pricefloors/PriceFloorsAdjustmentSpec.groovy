@@ -62,12 +62,12 @@ class PriceFloorsAdjustmentSpec extends PriceFloorsBaseSpec {
     private static final Integer MAX_STATIC_ADJUST_VALUE = Integer.MAX_VALUE
     private static final String WILDCARD = '*'
 
-    private static final PbsContainerConfig PBS_CONFIG = new PbsContainerConfig(PbsConfig.currencyConverterConfig +
+    private static final PbsContainerConfig PBS_CONFIG = new PbsContainerConfig(PbsConfig.currencyConverterConfig) +
             FLOORS_CONFIG +
             GENERIC_ALIAS_CONFIG +
             ["adapters.openx.enabled" : "true",
              "adapters.openx.endpoint": "$networkServiceContainer.rootUri/auction".toString()] +
-            ["adapter-defaults.ortb.multiformat-supported": "true"])
+            ["adapter-defaults.ortb.multiformat-supported": "true"]
     private static PrebidServerService pbsService
 
     def setupSpec() {

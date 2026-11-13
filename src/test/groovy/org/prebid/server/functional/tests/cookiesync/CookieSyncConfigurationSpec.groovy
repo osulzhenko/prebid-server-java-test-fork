@@ -24,17 +24,13 @@ import static org.prebid.server.functional.util.privacy.CcpaConsent.Signal.ENFOR
 
 class CookieSyncConfigurationSpec extends CookieSyncBaseSpec {
 
-    private static final PbsContainerConfig NO_COOKIE_FAMILY_CONFIG =
-            new PbsContainerConfig(["adapters.${GENERIC.value}.usersync.cookie-family-name": null])
+    private static final PbsContainerConfig NO_COOKIE_FAMILY_CONFIG = new PbsContainerConfig(["adapters.${GENERIC.value}.usersync.cookie-family-name": null])
 
-    private static final PbsContainerConfig CUSTOM_COOKIE_FAMILY_CONFIG =
-            PBS_CONFIG + ["adapters.${GENERIC.value}.usersync.cookie-family-name": BOGUS.value]
+    private static final PbsContainerConfig CUSTOM_COOKIE_FAMILY_CONFIG = PBS_CONFIG + ["adapters.${GENERIC.value}.usersync.cookie-family-name": BOGUS.value]
 
-    private static final PbsContainerConfig HOST_COOKIE_CONFIG =
-            PBS_CONFIG + [
-                    'host-cookie.family'     : GENERIC.value,
-                    'host-cookie.cookie-name': RANDOM_COOKIE_NAME
-            ]
+    private static final PbsContainerConfig HOST_COOKIE_CONFIG = PBS_CONFIG +
+            ['host-cookie.family'     : GENERIC.value,
+             'host-cookie.cookie-name': RANDOM_COOKIE_NAME]
 
     def "PBS cookie sync request should replace disabled bidder and fill up response with enabled bidders to the limit in request"() {
         given: "PBS bidder config"

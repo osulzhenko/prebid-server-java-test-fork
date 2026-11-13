@@ -4,12 +4,11 @@ import org.prebid.server.functional.model.config.AccountAnalyticsConfig
 import org.prebid.server.functional.model.config.AccountConfig
 import org.prebid.server.functional.model.config.AccountHooksConfiguration
 import org.prebid.server.functional.model.config.ExecutionPlan
-import org.prebid.server.functional.model.config.PbsModulesConfig
 import org.prebid.server.functional.model.db.Account
 import org.prebid.server.functional.model.db.StoredResponse
+import org.prebid.server.functional.model.request.auction.AnalyticTagStatus
 import org.prebid.server.functional.model.request.auction.AnalyticsOptions
 import org.prebid.server.functional.model.request.auction.BidRequest
-import org.prebid.server.functional.model.request.auction.AnalyticTagStatus
 import org.prebid.server.functional.model.request.auction.PrebidAnalytics
 import org.prebid.server.functional.model.request.auction.RichmediaFilter
 import org.prebid.server.functional.model.request.auction.StoredBidResponse
@@ -18,10 +17,10 @@ import org.prebid.server.functional.model.response.auction.ModuleActivityName
 import org.prebid.server.functional.tests.module.ModuleBaseSpec
 import org.prebid.server.functional.util.PBSUtils
 
-import static org.prebid.server.functional.model.config.ModuleName.PB_ORTB2_BLOCKING
-import static org.prebid.server.functional.model.config.ModuleName.PB_RICHMEDIA_FILTER
 import static org.prebid.server.functional.model.bidder.BidderName.GENERIC
 import static org.prebid.server.functional.model.config.HookHttpEndpoint.AUCTION
+import static org.prebid.server.functional.model.config.ModuleName.PB_ORTB2_BLOCKING
+import static org.prebid.server.functional.model.config.ModuleName.PB_RICHMEDIA_FILTER
 import static org.prebid.server.functional.model.config.Stage.ALL_PROCESSED_BID_RESPONSES
 import static org.prebid.server.functional.model.config.Stage.RAW_BIDDER_RESPONSE
 import static org.prebid.server.functional.model.request.auction.TraceLevel.VERBOSE

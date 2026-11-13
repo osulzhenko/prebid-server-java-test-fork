@@ -210,7 +210,6 @@ class CookieSyncNoLimitSpec extends CookieSyncBaseSpec {
         assert response?.getBidderStatus()?.size() == DEFAULT_PBS_BIDDERS.size()
     }
 
-
     def "PBS cookie sync request should fill response with all available coop sync bidder when limit is not specified"() {
         given: "Cookie sync request body"
         def cookieSyncRequest = new CookieSyncRequest().tap {

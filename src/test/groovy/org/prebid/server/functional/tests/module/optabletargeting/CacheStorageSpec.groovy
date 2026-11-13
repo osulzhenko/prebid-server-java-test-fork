@@ -1,11 +1,8 @@
 package org.prebid.server.functional.tests.module.optabletargeting
 
-import org.prebid.server.functional.model.config.AccountConfig
-import org.prebid.server.functional.model.config.AccountHooksConfiguration
 import org.prebid.server.functional.model.config.IdentifierType
 import org.prebid.server.functional.model.config.OperatingSystem
 import org.prebid.server.functional.model.config.OptableTargetingConfig
-import org.prebid.server.functional.model.config.PbsModulesConfig
 import org.prebid.server.functional.model.db.Account
 import org.prebid.server.functional.model.request.auction.BidRequest
 import org.prebid.server.functional.model.request.auction.Data
@@ -18,11 +15,9 @@ import org.prebid.server.functional.testcontainers.scaffolding.StoredCache
 import org.prebid.server.functional.tests.module.ModuleBaseSpec
 import org.prebid.server.functional.util.PBSUtils
 
-import static org.prebid.server.functional.model.config.Stage.PROCESSED_AUCTION_REQUEST
-
-
 import static org.apache.http.HttpStatus.SC_NOT_FOUND
 import static org.prebid.server.functional.model.config.ModuleName.OPTABLE_TARGETING
+import static org.prebid.server.functional.model.config.Stage.PROCESSED_AUCTION_REQUEST
 import static org.prebid.server.functional.testcontainers.Dependencies.getNetworkServiceContainer
 
 class CacheStorageSpec extends ModuleBaseSpec {

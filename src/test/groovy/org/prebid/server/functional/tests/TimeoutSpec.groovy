@@ -6,13 +6,11 @@ import org.prebid.server.functional.model.request.auction.BidRequest
 import org.prebid.server.functional.model.request.auction.PrebidStoredRequest
 import org.prebid.server.functional.service.PrebidServerService
 import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
-import org.prebid.server.functional.testcontainers.container.PrebidServerContainer
 import org.prebid.server.functional.util.PBSUtils
-import org.testcontainers.utility.MountableFile
 import spock.lang.Shared
 
 import static org.prebid.server.functional.testcontainers.container.PrebidServerContainer.APP_WORKDIR
-import static org.prebid.server.functional.util.ContainerFileUtil.*
+import static org.prebid.server.functional.util.ContainerFileUtil.jsonFile
 
 class TimeoutSpec extends BaseSpec {
 
@@ -132,7 +130,6 @@ class TimeoutSpec extends BaseSpec {
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
         assert isInternalProcessingTime(bidderRequest.tmax, MAX_TIMEOUT)
     }
-
 
     def "PBS should take data by priority when request, stored request, default request are defined"() {
         given: "PBS service with default request"
@@ -282,9 +279,9 @@ class TimeoutSpec extends BaseSpec {
     def "PBS should choose min timeout form config for bidder request when in request value lowest that in auction.biddertmax.min"() {
         given: "PBS config with percent"
         def minBidderTmax = PBSUtils.getRandomNumber(MIN_TIMEOUT, MAX_TIMEOUT)
-        def prebidServerService = pbsServiceFactory.getService(
-                ["auction.biddertmax.min": minBidderTmax as String,
-                 "auction.biddertmax.max": MAX_TIMEOUT as String])
+        def config = new PbsContainerConfig(["auction.biddertmax.min": minBidderTmax as String,
+                                             "auction.biddertmax.max": MAX_TIMEOUT as String])
+        def prebidServerService = pbsServiceFactory.getService(config)
 
         and: "Default basic BidRequest"
         def timeout = PBSUtils.getRandomNumber(0, minBidderTmax)

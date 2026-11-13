@@ -19,7 +19,6 @@ import org.prebid.server.functional.model.response.auction.MediaType
 import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.PBSUtils
 
-import java.math.RoundingMode
 import java.time.Instant
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST
@@ -30,8 +29,8 @@ import static org.prebid.server.functional.model.pricefloors.MediaType.MULTIPLE
 import static org.prebid.server.functional.model.pricefloors.MediaType.VIDEO
 import static org.prebid.server.functional.model.pricefloors.PriceFloorField.MEDIA_TYPE
 import static org.prebid.server.functional.model.pricefloors.PriceFloorField.SITE_DOMAIN
-import static org.prebid.server.functional.model.request.auction.DistributionChannel.APP
 import static org.prebid.server.functional.model.request.auction.AnalyticTagStatus.SUCCESS
+import static org.prebid.server.functional.model.request.auction.DistributionChannel.APP
 import static org.prebid.server.functional.model.response.auction.ErrorType.PREBID
 
 class PriceFloorsSignalingSpec extends PriceFloorsBaseSpec {

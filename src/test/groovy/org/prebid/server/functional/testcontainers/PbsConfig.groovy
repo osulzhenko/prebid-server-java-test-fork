@@ -1,6 +1,5 @@
 package org.prebid.server.functional.testcontainers
 
-import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.PostgreSQLContainer
 

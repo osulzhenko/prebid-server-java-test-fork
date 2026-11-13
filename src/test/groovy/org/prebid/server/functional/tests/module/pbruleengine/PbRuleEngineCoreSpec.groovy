@@ -1,6 +1,5 @@
 package org.prebid.server.functional.tests.module.pbruleengine
 
-
 import org.prebid.server.functional.model.config.RuleEngineModelDefault
 import org.prebid.server.functional.model.config.RuleEngineModelDefaultArgs
 import org.prebid.server.functional.model.config.RuleSet
@@ -9,11 +8,11 @@ import org.prebid.server.functional.model.config.Stage
 import org.prebid.server.functional.model.request.auction.Imp
 import org.prebid.server.functional.util.PBSUtils
 
-import static org.prebid.server.functional.model.config.ModuleName.PB_RULE_ENGINE
 import static org.prebid.server.functional.model.bidder.BidderName.AMX
 import static org.prebid.server.functional.model.bidder.BidderName.GENERIC
 import static org.prebid.server.functional.model.bidder.BidderName.OPENX
 import static org.prebid.server.functional.model.bidder.BidderName.UNKNOWN
+import static org.prebid.server.functional.model.config.ModuleName.PB_RULE_ENGINE
 import static org.prebid.server.functional.model.config.PbRulesEngine.createRulesEngineWithRule
 import static org.prebid.server.functional.model.config.ResultFunction.LOG_A_TAG
 import static org.prebid.server.functional.model.config.RuleEngineModelRuleResult.createRuleEngineModelRuleWithExcludeResult

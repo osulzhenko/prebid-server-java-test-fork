@@ -511,7 +511,6 @@ class CookieSyncSpec extends CookieSyncBaseSpec {
         assert metric["cookie_sync.generic.tcf.blocked"] == 1
     }
 
-
     def "PBS cookie sync shouldn't emit error limit reached when bidder coop-synced"() {
         given: "Default cookie sync request with single bidder"
         def cookieSyncRequest = CookieSyncRequest.defaultCookieSyncRequest.tap {

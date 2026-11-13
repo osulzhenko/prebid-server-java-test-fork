@@ -15,9 +15,7 @@ import org.prebid.server.functional.model.request.auction.TraceLevel
 import org.prebid.server.functional.model.response.auction.InvocationResult
 import org.prebid.server.functional.service.PrebidServerException
 import org.prebid.server.functional.service.PrebidServerService
-import org.prebid.server.functional.testcontainers.PbsServiceFactory
 import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
-import spock.lang.IgnoreRest
 
 import java.time.Instant
 

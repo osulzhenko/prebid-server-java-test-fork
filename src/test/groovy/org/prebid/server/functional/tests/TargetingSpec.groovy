@@ -468,7 +468,7 @@ class TargetingSpec extends BaseSpec {
         def bidderRequest = bidder.getBidderRequests(bidRequest.id)
         assert bidderRequest.ext.prebid.targeting
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -1303,7 +1303,7 @@ class TargetingSpec extends BaseSpec {
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
         assert bidderRequest?.ext?.prebid?.targeting?.priceGranularity == PriceGranularity.getDefault(priceGranularity)
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 

@@ -21,7 +21,7 @@ import org.prebid.server.functional.model.response.auction.Meta
 import org.prebid.server.functional.model.response.auction.Prebid
 import org.prebid.server.functional.model.response.cookiesync.UserSyncInfo
 import org.prebid.server.functional.service.PrebidServerException
-import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.HttpUtil
 import org.prebid.server.functional.util.PBSUtils
 
@@ -50,14 +50,15 @@ class AuctionSpec extends BaseSpec {
     private static final String IMPS_DROPPED_METRIC = 'imps_dropped'
     private static final Integer IMP_LIMIT = 1
 
-    private static final Map<String, String> GENERIC_CONFIG = [
-            "adapters.${GENERIC.value}.usersync.${USER_SYNC_TYPE.value}.url"         : USER_SYNC_URL]
-    private static final Map<String, String> PBS_CONFIG = ["auction.biddertmax.max"    : MAX_TIMEOUT as String,
-                                                           "host-cookie.family"        : GENERIC.value,
-                                                           "host-cookie.cookie-name"   : GENERIC_COOKIE_NAME,
-                                                           "auction.default-timeout-ms": DEFAULT_TIMEOUT as String]
-
-    private static final PrebidServerService prebidServerService = pbsServiceFactory.getService(PBS_CONFIG + GENERIC_CONFIG)
+    private static final PbsContainerConfig PBS_CONFIG = new PbsContainerConfig([
+            'auction.biddertmax.max'    : MAX_TIMEOUT,
+            'host-cookie.family'        : GENERIC.value,
+            'host-cookie.cookie-name'   : GENERIC_COOKIE_NAME,
+            'auction.default-timeout-ms': DEFAULT_TIMEOUT])
+    private static final PbsContainerConfig BUYER_UID_CONFIG = PBS_CONFIG + ["adapters.${GENERIC.value}.usersync.${USER_SYNC_TYPE.value}.url": USER_SYNC_URL]
+    private static final PbsContainerConfig RANDOM_BID_ID_ENABLED_CONFIG = new PbsContainerConfig(['auction.enforce-random-bid-id': 'true'])
+    private static final PbsContainerConfig RANDOM_BID_ID_DISABLED_CONFIG = new PbsContainerConfig(['auction.enforce-random-bid-id': 'false'])
+    private static final PbsContainerConfig RANDOM_BID_ID_DEFAULT_CONFIG = new PbsContainerConfig(['auction.enforce-random-bid-id': null])
 
     def "PBS should return version in response header for auction request for #description"() {
         when: "PBS processes auction request"
@@ -126,13 +127,15 @@ class AuctionSpec extends BaseSpec {
 
     def "PBS should populate bidder request buyeruid from buyeruids when buyeruids with appropriate bidder present in request"() {
         given: "Bid request with buyeruids"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
+
         def buyeruid = PBSUtils.randomString
         def bidRequest = BidRequest.defaultBidRequest.tap {
             user = new User(ext: new UserExt(prebid: new UserExtPrebid(buyeruids: [(GENERIC): buyeruid])))
         }
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest)
+        pbsService.sendAuctionRequest(bidRequest)
 
         then: "Bidder request should contain buyeruid from the user.ext.prebid.buyeruids"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -144,13 +147,15 @@ class AuctionSpec extends BaseSpec {
 
     def "PBS shouldn't populate bidder request buyeruid from buyeruids when buyeruids without appropriate bidder present in request"() {
         given: "Bid request with buyeruids"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
+
         def buyeruid = PBSUtils.randomString
         def bidRequest = BidRequest.defaultBidRequest.tap {
             user = new User(ext: new UserExt(prebid: new UserExtPrebid(buyeruids: [(APPNEXUS): buyeruid])))
         }
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest)
+        pbsService.sendAuctionRequest(bidRequest)
 
         then: "Bidder request shouldn't contain buyeruid from the user.ext.prebid.buyeruids"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -159,6 +164,7 @@ class AuctionSpec extends BaseSpec {
 
     def "PBS should populate buyeruid from uids cookie when buyeruids with appropriate bidder but without value present in request"() {
         given: "Bid request with buyeruids"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
         def bidRequest = BidRequest.defaultBidRequest.tap {
             user = new User(ext: new UserExt(prebid: new UserExtPrebid(buyeruids: [(GENERIC): ""])))
         }
@@ -168,7 +174,7 @@ class AuctionSpec extends BaseSpec {
         def cookieHeader = HttpUtil.getCookieHeader(uidsCookie)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookieHeader)
+        pbsService.sendAuctionRequest(bidRequest, cookieHeader)
 
         then: "Bidder request should contain buyeruid from the uids cookie"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -177,6 +183,7 @@ class AuctionSpec extends BaseSpec {
 
     def "PBS shouldn't populate buyeruid from uids cookie when buyeruids with appropriate bidder but without value present in request"() {
         given: "Bid request with buyeruids"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
         def bidRequest = BidRequest.defaultBidRequest.tap {
             user = new User(ext: new UserExt(prebid: new UserExtPrebid(buyeruids: [(GENERIC): ""])))
         }
@@ -185,7 +192,7 @@ class AuctionSpec extends BaseSpec {
         def cookieHeader = HttpUtil.getCookieHeader(null)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookieHeader)
+        pbsService.sendAuctionRequest(bidRequest, cookieHeader)
 
         then: "Bidder request shouldn't contain buyeruid from the uids cookie"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -193,7 +200,10 @@ class AuctionSpec extends BaseSpec {
     }
 
     def "PBS should take precedence buyeruids whenever present valid uid cookie"() {
-        given: "Bid request with buyeruids"
+        given: "PBS service"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
+
+        and: "Bid request with buyeruids"
         def buyeruid = PBSUtils.randomString
         def bidRequest = BidRequest.defaultBidRequest.tap {
             user = new User(ext: new UserExt(prebid: new UserExtPrebid(buyeruids: [(GENERIC): buyeruid])))
@@ -204,7 +214,7 @@ class AuctionSpec extends BaseSpec {
         def cookieHeader = HttpUtil.getCookieHeader(uidsCookie)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookieHeader)
+        pbsService.sendAuctionRequest(bidRequest, cookieHeader)
 
         then: "Bidder request should contain buyeruid from the buyeruids"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -212,7 +222,10 @@ class AuctionSpec extends BaseSpec {
     }
 
     def "PBS should populate buyeruid from host cookie name config when host cookie family matched with requested bidder"() {
-        given: "Bid request"
+        given: "PBS service"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
+
+        and: "Default bid request"
         def bidRequest = BidRequest.defaultBidRequest
 
         and: "Host cookie"
@@ -220,7 +233,7 @@ class AuctionSpec extends BaseSpec {
         def cookies = HttpUtil.getCookieHeader(GENERIC_COOKIE_NAME, hostCookieUid)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookies)
+        pbsService.sendAuctionRequest(bidRequest, cookies)
 
         then: "Bidder request should contain buyeruid from cookieName"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -228,12 +241,13 @@ class AuctionSpec extends BaseSpec {
     }
 
     def "PBS shouldn't populate buyeruid from cookie name config when host cookie family not matched with requested cookie-family-name"() {
-        given: "PBS config"
+        given: "PBS service with host cookie config"
         def cookieName = PBSUtils.randomString
-        def prebidServerService = pbsServiceFactory.getService(PBS_CONFIG + GENERIC_CONFIG
-                + ["host-cookie.family"                          : APPNEXUS.value,
-                   "host-cookie.cookie-name"                     : cookieName,
-                   "adapters.generic.usersync.cookie-family-name": GENERIC.value])
+        def pbsConfig = BUYER_UID_CONFIG +
+                ['host-cookie.family'                          : APPNEXUS.value,
+                 'host-cookie.cookie-name'                     : cookieName,
+                 'adapters.generic.usersync.cookie-family-name': GENERIC.value]
+        def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Bid request"
         def bidRequest = BidRequest.defaultBidRequest
@@ -243,15 +257,21 @@ class AuctionSpec extends BaseSpec {
         def cookies = HttpUtil.getCookieHeader(cookieName, hostCookieUid)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookies)
+        pbsService.sendAuctionRequest(bidRequest, cookies)
 
         then: "Bidder request shouldn't contain buyeruid from cookieName"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
         assert !bidderRequest.user
+
+        cleanup:
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS shouldn't populate buyeruid from cookie when cookie-name in cookie and config are diferent"() {
-        given: "Bid request"
+        given: "PBS service with buyer config"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
+
+        and: "Default bid request"
         def bidRequest = BidRequest.defaultBidRequest
 
         and: "Host cookie"
@@ -259,7 +279,7 @@ class AuctionSpec extends BaseSpec {
         def cookies = HttpUtil.getCookieHeader(PBSUtils.randomString, hostCookieUid)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookies)
+        pbsService.sendAuctionRequest(bidRequest, cookies)
 
         then: "Bidder request shouldn't contain buyeruid from cookieName"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -290,11 +310,14 @@ class AuctionSpec extends BaseSpec {
         def bidRequest = BidRequest.defaultBidRequest
 
         and: "Default bidder response without bid"
+        def rendererName = PBSUtils.randomString
+        def rendererUrl = PBSUtils.randomString
+        def rendererVersion = PBSUtils.randomString
         def bidResponse = BidResponse.getDefaultBidResponse(bidRequest).tap {
             seatbid[0].bid[0].ext = new BidExt(prebid: new Prebid(meta: new Meta(
-                    rendererName: PBSUtils.randomString,
-                    rendererUrl: PBSUtils.randomString,
-                    rendererVersion: PBSUtils.getRandomString())))
+                    rendererName: rendererName,
+                    rendererUrl: rendererUrl,
+                    rendererVersion: rendererVersion)))
         }
 
         and: "Set bidder response"
@@ -304,16 +327,18 @@ class AuctionSpec extends BaseSpec {
         def response = defaultPbsService.sendAuctionRequest(bidRequest)
 
         then: "Bid response should contain meta value same in request"
-        assert response.seatbid[0].bid[0].ext.prebid.meta.rendererName ==
-                bidResponse.seatbid[0].bid[0].ext.prebid.meta.rendererName
-        assert response.seatbid[0].bid[0].ext.prebid.meta.rendererUrl ==
-                bidResponse.seatbid[0].bid[0].ext.prebid.meta.rendererUrl
-        assert response.seatbid[0].bid[0].ext.prebid.meta.rendererVersion ==
-                bidResponse.seatbid[0].bid[0].ext.prebid.meta.rendererVersion
+        verifyAll(response.seatbid.bid.ext.prebid.meta.flatten()) {
+            it.rendererName == [rendererName]
+            it.rendererUrl == [rendererUrl]
+            it.rendererVersion == [rendererVersion]
+        }
     }
 
     def "PBS call to alias should populate bidder request buyeruid from family user.buyeruids when resolved name is present"() {
-        given: "Alias bid request"
+        given: "PBS service with buyer config"
+        def pbsService = pbsServiceFactory.getService(BUYER_UID_CONFIG)
+
+        and: "Alias bid request"
         def buyeruid = PBSUtils.randomString
         def bidRequest = BidRequest.defaultBidRequest.tap {
             imp[0].ext.prebid.bidder.alias = new Generic()
@@ -327,7 +352,7 @@ class AuctionSpec extends BaseSpec {
         def cookies = HttpUtil.getCookieHeader(GENERIC_COOKIE_NAME, hostCookieUid)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookies)
+        pbsService.sendAuctionRequest(bidRequest, cookies)
 
         then: "Bidder request should contain buyeruid from the user.ext.prebid.buyeruids"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
@@ -338,12 +363,14 @@ class AuctionSpec extends BaseSpec {
     }
 
     def "PBS call to alias should populate bidder request buyeruid from family user.buyeruids when it's contained in base bidder"() {
-        given: "Pbs config with alias"
+        given: "PBS service with buyer and alias config"
         def cookieName = PBSUtils.randomString
-        def prebidServerService = pbsServiceFactory.getService(PBS_CONFIG + GENERIC_CONFIG + GENERIC_ALIAS_CONFIG
-                + ["host-cookie.family"                          : GENERIC.value,
-                   "host-cookie.cookie-name"                     : cookieName,
-                   "adapters.generic.usersync.cookie-family-name": GENERIC.value])
+        def pbsConfig = BUYER_UID_CONFIG + GENERIC_ALIAS_CONFIG + [
+                'host-cookie.family'                          : GENERIC.value,
+                'host-cookie.cookie-name'                     : cookieName,
+                'adapters.generic.usersync.cookie-family-name': GENERIC.value
+        ]
+        def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Alias bid request"
         def buyeruid = PBSUtils.randomString
@@ -358,14 +385,14 @@ class AuctionSpec extends BaseSpec {
         def cookies = HttpUtil.getCookieHeader(cookieName, hostCookieUid)
 
         when: "PBS processes auction request"
-        prebidServerService.sendAuctionRequest(bidRequest, cookies)
+        pbsService.sendAuctionRequest(bidRequest, cookies)
 
         then: "Bidder request should contain buyeruid from the user.ext.prebid.buyeruids"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
         assert bidderRequest?.user?.buyeruid == buyeruid
 
-        where:
-        bidderName << [GENERIC, GENERIC_CAMEL_CASE]
+        cleanup:
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS should set device.ext.cdep from header when cookieDeprecation and Deprecation header is specified"() {
@@ -462,8 +489,8 @@ class AuctionSpec extends BaseSpec {
         def defaultAccountConfigSettings = AccountConfig.defaultAccountConfig.tap {
             auction = new AccountAuctionConfig(privacySandbox: privacySandbox)
         }
-        def pbsService = pbsServiceFactory.getService(PBS_CONFIG +
-                ["settings.default-account-config": encode(defaultAccountConfigSettings)])
+        def pbsConfig = PBS_CONFIG + ['settings.default-account-config': encode(defaultAccountConfigSettings)]
+        def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Default basic BidRequest with generic bidder"
         def bidRequest = BidRequest.defaultBidRequest
@@ -477,6 +504,9 @@ class AuctionSpec extends BaseSpec {
         then: "BidderRequest should have device.ext.cdep from sec-cookie-deprecation header"
         def bidderRequest = bidder.getBidderRequest(bidRequest.id)
         assert bidderRequest.device.ext.cdep == secCookieDeprecation[COOKIE_DEPRECATION_HEADER]
+
+        cleanup:
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 
     def "PBS shouldn't set device.ext.cdep from header when default account don't contain privacy sandbox and request account is empty"() {
@@ -524,8 +554,7 @@ class AuctionSpec extends BaseSpec {
 
     def "PBS should override short bid.id with random uuid when enforce-random-bid-id is enabled"() {
         given: "PBS with enabled generate-bid-id"
-        def pbsConfig = ['auction.enforce-random-bid-id': 'true']
-        def pbsService = pbsServiceFactory.getService(pbsConfig)
+        def pbsService = pbsServiceFactory.getService(RANDOM_BID_ID_ENABLED_CONFIG)
 
         and: "Default bid request"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -565,8 +594,7 @@ class AuctionSpec extends BaseSpec {
 
     def "PBS shouldn't override long enough bid.id with random uuid when enforce-random-bid-id is enabled"() {
         given: "PBS with enabled generate-bid-id"
-        def pbsConfig = ['auction.enforce-random-bid-id': 'true']
-        def pbsService = pbsServiceFactory.getService(pbsConfig)
+        def pbsService = pbsServiceFactory.getService(RANDOM_BID_ID_ENABLED_CONFIG)
 
         and: "Default bid request"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -602,7 +630,6 @@ class AuctionSpec extends BaseSpec {
 
     def "PBS shouldn't override short bid.id when enforce-random-bid-id in default or disabled"() {
         given: "PBS with disabled generate-bid-id"
-        def pbsConfig = ["auction.enforce-random-bid-id": enforceRandomBidId]
         def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Default bid request"
@@ -637,7 +664,7 @@ class AuctionSpec extends BaseSpec {
         assert response.seatbid.bid.id.flatten().sort() == [originalBidId]
 
         where:
-        enforceRandomBidId << [null, 'false']
+        pbsConfig << [RANDOM_BID_ID_DEFAULT_CONFIG, RANDOM_BID_ID_DISABLED_CONFIG]
     }
 
     def "PBS should drop extra impressions with warnings when number of impressions exceeds impression-limit"() {

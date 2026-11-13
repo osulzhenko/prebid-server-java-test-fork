@@ -20,17 +20,13 @@ class CookieSyncPriSpec extends CookieSyncBaseSpec {
 
     private static final PbsContainerConfig GENERIC_USERSYNC_CONFIG = new PbsContainerConfig(GENERIC_CONFIG)
 
-    private static final PbsContainerConfig COOP_SYNC_BASE_CONFIG = GENERIC_USERSYNC_CONFIG + [
-            "adapters.${GENERIC.value}.usersync.redirect.url"         : USER_SYNC_URL,
-            "adapters.${GENERIC.value}.usersync.redirect.support-cors": CORS_SUPPORT.toString(),
-            'cookie-sync.pri'                                         : GENERIC.value
-    ]
+    private static final PbsContainerConfig COOP_SYNC_BASE_CONFIG = GENERIC_USERSYNC_CONFIG +
+            ["adapters.${GENERIC.value}.usersync.redirect.url"         : USER_SYNC_URL,
+             "adapters.${GENERIC.value}.usersync.redirect.support-cors": CORS_SUPPORT.toString(),
+             'cookie-sync.pri'                                         : GENERIC.value]
 
-    private static final PbsContainerConfig COOP_SYNC_ENABLED_CONFIG =
-            COOP_SYNC_BASE_CONFIG + ['cookie-sync.coop-sync.default': 'true']
-
-    private static final PbsContainerConfig COOP_SYNC_DISABLED_CONFIG =
-            COOP_SYNC_BASE_CONFIG + ['cookie-sync.coop-sync.default': 'false']
+    private static final PbsContainerConfig COOP_SYNC_ENABLED_CONFIG = COOP_SYNC_BASE_CONFIG + ['cookie-sync.coop-sync.default': 'true']
+    private static final PbsContainerConfig COOP_SYNC_DISABLED_CONFIG = COOP_SYNC_BASE_CONFIG + ['cookie-sync.coop-sync.default': 'false']
 
     private static PrebidServerService pbsWithCoopSyncDefault
     private static PrebidServerService pbsWithoutCoopSyncDefault

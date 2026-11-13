@@ -306,7 +306,7 @@ class GdprAuctionSpec extends PrivacyBaseSpec {
         def startTime = Instant.now()
 
         and: "Create new container"
-        def config = GDPR_VENDOR_LIST_CONFIG + ["adapters.generic.meta-info.vendor-id": GENERIC_VENDOR_ID as String]
+        def config = new PbsContainerConfig(GDPR_VENDOR_LIST_CONFIG + ["adapters.generic.meta-info.vendor-id": GENERIC_VENDOR_ID])
         def defaultPrivacyPbsService = pbsServiceFactory.getService(config)
 
         and: "Tcf consent setup"

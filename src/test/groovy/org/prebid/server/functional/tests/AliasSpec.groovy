@@ -12,6 +12,7 @@ import org.prebid.server.functional.model.response.auction.BidExt
 import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.service.PrebidServerException
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.PBSUtils
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST
@@ -30,30 +31,30 @@ import static org.prebid.server.functional.util.HttpUtil.CONTENT_ENCODING_HEADER
 
 class AliasSpec extends BaseSpec {
 
-    private static final Map<String, String> ADDITIONAL_BIDDERS_CONFIG = [
-            "adapters.${OPENX.value}.enabled"     : "true",
-            "adapters.${OPENX.value}.endpoint"    : "$networkServiceContainer.rootUri/${OPENX.value}/auction".toString(),
-            "adapters.${APPNEXUS.value}.enabled"  : "true",
-            "adapters.${APPNEXUS.value}.endpoint" : "$networkServiceContainer.rootUri/${APPNEXUS.value}/auction".toString()
-    ]
+    private static final Map<String, String> ADDITIONAL_BIDDERS_CONFIG = ["adapters.${OPENX.value}.enabled"    : "true",
+                                                                          "adapters.${OPENX.value}.endpoint"   : "$networkServiceContainer.rootUri/${OPENX.value}/auction".toString(),
+                                                                          "adapters.${APPNEXUS.value}.enabled" : "true",
+                                                                          "adapters.${APPNEXUS.value}.endpoint": "$networkServiceContainer.rootUri/${APPNEXUS.value}/auction".toString()]
 
-    private static final Map<String, String> AMX_CONFIG = [
-            "adapters.amx.enabled" : "true",
-            "adapters.amx.endpoint": "$networkServiceContainer.rootUri/auction".toString()
-    ]
+    private static final Map<String, String> AMX_CONFIG = ["adapters.${BidderName.AMX}.enabled" : "true",
+                                                           "adapters.${BidderName.AMX}.endpoint": "$networkServiceContainer.rootUri/auction".toString()]
 
-    private static final Map<String, String> GENERIC_HARD_ALIAS_CONFIG =
-            ADDITIONAL_BIDDERS_CONFIG + GENERIC_ALIAS_CONFIG + AMX_CONFIG
+    private static final PbsContainerConfig GENERIC_HARD_ALIAS_CONFIG = new PbsContainerConfig(
+            ADDITIONAL_BIDDERS_CONFIG + GENERIC_ALIAS_CONFIG + AMX_CONFIG)
 
-    private static final Map<String, String> AMX_HARD_ALIAS_CONFIG = AMX_CONFIG + [
-            "adapters.amx.aliases.alias.enabled"            : "true",
-            "adapters.amx.aliases.alias.meta-info.vendor-id": "0",
-            "adapters.amx.aliases.alias.endpoint"           : "$networkServiceContainer.rootUri/auction".toString(),
-            "adapters.generic.endpoint-compression"        : GZIP.value
-    ]
+    private static final PbsContainerConfig AMX_HARD_ALIAS_CONFIG = new PbsContainerConfig(AMX_CONFIG +
+            ["adapters.${BidderName.AMX}.aliases.alias.enabled"            : "true",
+             "adapters.${BidderName.AMX}.aliases.alias.meta-info.vendor-id": "0",
+             "adapters.${BidderName.AMX}.aliases.alias.endpoint"           : "$networkServiceContainer.rootUri/auction".toString()])
+    private static final PbsContainerConfig GENERIC_COMPRESS_CONFIG = new PbsContainerConfig(["adapters.generic.endpoint-compression": GZIP.value])
 
-    private static final PrebidServerService pbsServiceWithGenericHardAlias = pbsServiceFactory.getService(GENERIC_HARD_ALIAS_CONFIG)
-    private static final PrebidServerService pbsServiceWithAmxHardAlias = pbsServiceFactory.getService(AMX_HARD_ALIAS_CONFIG)
+    private static PrebidServerService pbsServiceWithGenericHardAlias = pbsServiceFactory.getService(GENERIC_HARD_ALIAS_CONFIG)
+    private static PrebidServerService pbsServiceWithAmxHardAlias = pbsServiceFactory.getService(AMX_HARD_ALIAS_CONFIG + GENERIC_COMPRESS_CONFIG)
+
+    def setupSpec() {
+        pbsServiceWithGenericHardAlias = pbsServiceFactory.getService(GENERIC_HARD_ALIAS_CONFIG)
+        pbsServiceWithAmxHardAlias = pbsServiceFactory.getService(AMX_HARD_ALIAS_CONFIG + GENERIC_COMPRESS_CONFIG)
+    }
 
     def "PBS should route request-defined alias to its parent adapter"() {
         given: "Default bid request with alias"

@@ -175,7 +175,7 @@ class SetUidSpec extends BaseSpec {
         assert response.uidsCookie.tempUIDs[GENERIC]
         assert response.uidsCookie.tempUIDs[MAGNITE]
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -203,7 +203,7 @@ class SetUidSpec extends BaseSpec {
         assert response.uidsCookie.tempUIDs[magniteBidder]
         assert response.uidsCookie.tempUIDs[genericBidder]
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -263,7 +263,7 @@ class SetUidSpec extends BaseSpec {
         assert response.uidsCookie.tempUIDs[APPNEXUS]
         assert response.uidsCookie.tempUIDs[MAGNITE]
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -296,7 +296,7 @@ class SetUidSpec extends BaseSpec {
         def metric = prebidServerService.sendCollectedMetricsRequest()
         assert metric["usersync.${MAGNITE.value}.tcf.blocked"] == 1
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -369,7 +369,7 @@ class SetUidSpec extends BaseSpec {
         and: "usersync.BIDDER.sets metric should be updated"
         assert metricsRequest["usersync.${OPENX.value}.sets"] == 1
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -405,7 +405,7 @@ class SetUidSpec extends BaseSpec {
         def metricsRequest = prebidServerService.sendCollectedMetricsRequest()
         assert metricsRequest["usersync.${APPNEXUS.value}.sizedout"] == 1
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -461,7 +461,7 @@ class SetUidSpec extends BaseSpec {
         assert exception.statusCode == 401
         assert exception.responseBody == 'Unauthorized: Sync is not allowed for this uids'
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 
@@ -494,7 +494,6 @@ class SetUidSpec extends BaseSpec {
                 ['cookie-sync.pri': "${OPENX.value}, ${GENERIC.value}"]
         def prebidServerService = pbsServiceFactory.getService(pbsConfig)
 
-
         and: "Setuid request"
         def request = SetuidRequest.defaultSetuidRequest
 
@@ -509,7 +508,7 @@ class SetUidSpec extends BaseSpec {
         then: "Response should contain requested tempUIDs"
         assert response.uidsCookie.tempUIDs.keySet() == new LinkedHashSet([GENERIC, OPENX, APPNEXUS, MAGNITE])
 
-        cleanup:
+        cleanup: "Stop and remove pbs container"
         pbsServiceFactory.removeContainer(pbsConfig)
     }
 

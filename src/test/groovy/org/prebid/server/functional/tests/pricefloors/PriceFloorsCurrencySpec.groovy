@@ -27,7 +27,7 @@ class PriceFloorsCurrencySpec extends PriceFloorsBaseSpec {
 
     private static final String GENERAL_ERROR_METRIC = "price-floors.general.err"
 
-    private static final PbsContainerConfig PBS_CONFIG = new PbsContainerConfig(FLOORS_CONFIG + PbsConfig.currencyConverterConfig)
+    private static final PbsContainerConfig PBS_CONFIG = FLOORS_CONFIG + PbsConfig.currencyConverterConfig
     private static PrebidServerService currencyFloorsPbsService
 
     def setupSpec() {

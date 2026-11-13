@@ -16,10 +16,10 @@ import org.prebid.server.functional.util.PBSUtils
 import java.time.Instant
 
 import static org.prebid.server.functional.model.ChannelType.WEB
-import static org.prebid.server.functional.model.config.ModuleName.PB_RULE_ENGINE
 import static org.prebid.server.functional.model.bidder.BidderName.AMX
 import static org.prebid.server.functional.model.bidder.BidderName.GENERIC
 import static org.prebid.server.functional.model.bidder.BidderName.OPENX
+import static org.prebid.server.functional.model.config.ModuleName.PB_RULE_ENGINE
 import static org.prebid.server.functional.model.config.PbRulesEngine.createRulesEngineWithRule
 import static org.prebid.server.functional.model.config.RuleEngineFunction.AD_UNIT_CODE
 import static org.prebid.server.functional.model.config.RuleEngineFunction.AD_UNIT_CODE_IN
@@ -30,10 +30,10 @@ import static org.prebid.server.functional.model.config.RuleEngineFunction.DOMAI
 import static org.prebid.server.functional.model.config.RuleEngineFunction.DOMAIN_IN
 import static org.prebid.server.functional.model.config.RuleEngineFunction.MEDIA_TYPE_IN
 import static org.prebid.server.functional.model.pricefloors.MediaType.BANNER
+import static org.prebid.server.functional.model.request.auction.AnalyticTagStatus.SUCCESS
 import static org.prebid.server.functional.model.request.auction.DistributionChannel.APP
 import static org.prebid.server.functional.model.request.auction.DistributionChannel.DOOH
 import static org.prebid.server.functional.model.request.auction.DistributionChannel.SITE
-import static org.prebid.server.functional.model.request.auction.AnalyticTagStatus.SUCCESS
 import static org.prebid.server.functional.model.request.auction.ImpUnitCode.GPID
 import static org.prebid.server.functional.model.request.auction.ImpUnitCode.PB_AD_SLOT
 import static org.prebid.server.functional.model.request.auction.ImpUnitCode.STORED_REQUEST

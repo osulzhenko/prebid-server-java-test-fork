@@ -635,7 +635,6 @@ class AlternateBidderCodeSpec extends BaseSpec {
         assert exception.responseBody == "Invalid request format: " +
                 "request.ext.prebid.alternatebiddercodes.bidders.unknown is not a known bidder or alias"
 
-
         where:
         requestedAlternateBidderCodes << [new AlternateBidderCodes(bidders: [(UNKNOWN): new CodesBidderConfig()]),
                                           new AlternateBidderCodes(enabled: true, bidders: [(UNKNOWN): new CodesBidderConfig()]),

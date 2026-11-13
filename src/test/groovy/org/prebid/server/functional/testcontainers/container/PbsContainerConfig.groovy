@@ -3,19 +3,14 @@ package org.prebid.server.functional.testcontainers.container
 import groovy.transform.EqualsAndHashCode
 import org.testcontainers.images.builder.Transferable
 
-
 @EqualsAndHashCode
-
 class PbsContainerConfig {
 
     final Map<String, String> extraProperties
     final Map<String, Transferable> additionalFiles
 
-    PbsContainerConfig(Map<?, ?> extraProperties = [:],
-                       Map<String, Transferable> additionalFiles = [:]) {
-        this.extraProperties = extraProperties.collectEntries { key, value ->
-            [(key.toString()): value?.toString()]
-        }.asImmutable()
+    PbsContainerConfig(Map<?, ?> extraProperties = [:], Map<String, Transferable> additionalFiles = [:]) {
+        this.extraProperties = normalizeProperties(extraProperties)
         this.additionalFiles = additionalFiles.asImmutable()
     }
 
@@ -41,5 +36,11 @@ class PbsContainerConfig {
                 extraProperties,
                 [:] << additionalFiles << files
         )
+    }
+
+    private static Map<String, String> normalizeProperties(Map<?, ?> properties) {
+        properties.collectEntries {
+            key, value -> [(key.toString()): value?.toString()]
+        }.asImmutable()
     }
 }
