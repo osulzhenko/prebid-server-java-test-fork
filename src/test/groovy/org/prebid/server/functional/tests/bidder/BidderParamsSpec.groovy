@@ -20,6 +20,7 @@ import org.prebid.server.functional.model.request.auction.Targeting
 import org.prebid.server.functional.model.response.auction.BidExt
 import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.testcontainers.Dependencies
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.tests.BaseSpec
 import org.prebid.server.functional.util.PBSUtils
 
@@ -370,8 +371,8 @@ class BidderParamsSpec extends BaseSpec {
 
     def "PBS shouldn't emit warning and proceed auction when all imp.ext.prebid fields known for PBS"() {
         given: "PBS with old ortb version"
-        def pbsConfig = ['adapters.generic.ortb-version': '2.5']
-        def pbsService = pbsServiceFactory.getService(pbsConfig)
+        def config = new PbsContainerConfig(['adapters.generic.ortb-version': '2.5'])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default bid request with populated imp.ext.prebid"
         def impExt = ImpExt.getDefaultImpExt().tap {
@@ -522,9 +523,9 @@ class BidderParamsSpec extends BaseSpec {
 
     def "PBS should merge stored imp with appnexus bidder requested when reserve field specified"() {
         given: "Pbs default config with appnexus"
-        def pbsConfig = ["adapters.${APPNEXUS.value}.enabled" : "true",
-                         "adapters.${APPNEXUS.value}.endpoint": "$Dependencies.networkServiceContainer.rootUri/auction".toString()]
-        def defaultPbsService = pbsServiceFactory.getService(pbsConfig)
+        def config = new PbsContainerConfig(["adapters.${APPNEXUS.value}.enabled" : "true",
+                         "adapters.${APPNEXUS.value}.endpoint": "$Dependencies.networkServiceContainer.rootUri/auction".toString()])
+        def defaultPbsService = pbsServiceFactory.getService(config)
 
         and: "Default stored request with specified stored imps and request"
         def storedRequestId = PBSUtils.randomString

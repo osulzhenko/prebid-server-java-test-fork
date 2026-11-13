@@ -10,6 +10,7 @@ import org.prebid.server.functional.model.request.auction.Imp
 import org.prebid.server.functional.model.request.auction.Targeting
 import org.prebid.server.functional.model.response.auction.Adm
 import org.prebid.server.functional.model.response.auction.BidResponse
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.PBSUtils
 
 import static org.prebid.server.functional.model.response.auction.ErrorType.CACHE
@@ -135,8 +136,8 @@ class CacheSpec extends BaseSpec {
     def "PBS should cache bids without api-key header when targeting is specified and api-key-secured disabled"() {
         given: "Pbs config with disabled api-key-secured and pbc.api.key"
         def apiKey = PBSUtils.randomString
-        def pbsConfig = ['pbc.api.key': apiKey, 'cache.api-key-secured': 'false']
-        def pbsService = pbsServiceFactory.getService(['pbc.api.key': apiKey, 'cache.api-key-secured': 'false'])
+        def config = new PbsContainerConfig(['pbc.api.key': apiKey, 'cache.api-key-secured': 'false'])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -157,8 +158,8 @@ class CacheSpec extends BaseSpec {
     def "PBS should cache bids with api-key header when targeting is specified and api-key-secured enabled"() {
         given: "Pbs config with api-key-secured and pbc.api.key"
         def apiKey = PBSUtils.randomString
-        def pbsConfig = ['pbc.api.key': apiKey, 'cache.api-key-secured': 'true']
-        def pbsService = pbsServiceFactory.getService(pbsConfig)
+        def config = new PbsContainerConfig(['pbc.api.key': apiKey, 'cache.api-key-secured': 'true'])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -180,11 +181,11 @@ class CacheSpec extends BaseSpec {
         given: "Pbs config with append-trace-info-to-cache-id"
         def serverDataCenter = PBSUtils.randomString
         def bannerHostTtl = PBSUtils.getRandomNumber(300, 1500)
-        def pbsConfig = ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
-                         'datacenter-region'                  : serverDataCenter,
-                         'cache.append-trace-info-to-cache-id': 'true'
-        ]
-        def pbsService = pbsServiceFactory.getService(pbsConfig)
+        def config = new PbsContainerConfig(
+                ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
+                'datacenter-region'                  : serverDataCenter,
+                'cache.append-trace-info-to-cache-id': 'true'])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -215,10 +216,10 @@ class CacheSpec extends BaseSpec {
         given: "Pbs config with append-trace-info-to-cache-id"
         def serverDataCenter = PBSUtils.randomString
         def videoHostTtl = PBSUtils.getRandomNumber(300, 1500)
-        def pbsConfig = ['cache.default-ttl-seconds.video'    : videoHostTtl.toString(),
-                         'datacenter-region'                  : serverDataCenter,
-                         'cache.append-trace-info-to-cache-id': 'true'
-        ]
+        def pbsConfig = new PbsContainerConfig(
+                ['cache.default-ttl-seconds.video'    : videoHostTtl.toString(),
+                'datacenter-region'                  : serverDataCenter,
+                'cache.append-trace-info-to-cache-id': 'true'])
         def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Default BidRequest with cache, targeting"
@@ -258,10 +259,10 @@ class CacheSpec extends BaseSpec {
     def "PBS should cache bids with cache key that include account when append-trace-info-to-cache-id enabled and datacenter is null"() {
         given: "Pbs config with append-trace-info-to-cache-id"
         def bannerHostTtl = PBSUtils.getRandomNumber(300, 1500)
-        def pbsConfig = ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
-                         'datacenter-region'                  : null,
-                         'cache.append-trace-info-to-cache-id': 'true'
-        ]
+        def pbsConfig = new PbsContainerConfig(
+                ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
+                'datacenter-region'                  : null,
+                'cache.append-trace-info-to-cache-id': 'true'])
         def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Default BidRequest with cache, targeting"
@@ -293,10 +294,10 @@ class CacheSpec extends BaseSpec {
         given: "Pbs config with append-trace-info-to-cache-id"
         def serverDataCenter = PBSUtils.randomString
         def bannerHostTtl = PBSUtils.getRandomNumber(300, 1500)
-        def pbsConfig = ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
-                         'datacenter-region'                  : serverDataCenter,
-                         'cache.append-trace-info-to-cache-id': 'true'
-        ]
+        def pbsConfig = new PbsContainerConfig(
+                ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
+                'datacenter-region'                  : serverDataCenter,
+                'cache.append-trace-info-to-cache-id': 'true'])
         def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Default BidRequest with cache, targeting and large account ID"
@@ -326,11 +327,11 @@ class CacheSpec extends BaseSpec {
         given: "Pbs config with append-trace-info-to-cache-id"
         def bannerHostTtl = PBSUtils.getRandomNumber(300, 1500)
         def serverDataCenter = PBSUtils.randomString
-        def pbsConfig = ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
-                         'datacenter-region'                  : serverDataCenter,
-                         'cache.append-trace-info-to-cache-id': 'false'
-        ]
-        def pbsService = pbsServiceFactory.getService(pbsConfig)
+        def config = new PbsContainerConfig(
+                ['cache.default-ttl-seconds.banner'   : bannerHostTtl.toString(),
+                'datacenter-region'                  : serverDataCenter,
+                'cache.append-trace-info-to-cache-id': 'false'])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -464,10 +465,11 @@ class CacheSpec extends BaseSpec {
 
     def "PBS shouldn't cache bids when targeting is specified and config cache is invalid"() {
         given: "Pbs config with cache"
-        def INVALID_PREBID_CACHE_CONFIG = ["cache.path"  : CACHE_PATH,
-                                           "cache.scheme": HTTP_SCHEME,
-                                           "cache.host"  : CACHE_HOST]
-        def pbsService = pbsServiceFactory.getService(INVALID_PREBID_CACHE_CONFIG)
+        def config = new PbsContainerConfig(
+                ["cache.path"  : CACHE_PATH,
+                "cache.scheme": HTTP_SCHEME,
+                "cache.host"  : CACHE_HOST])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -485,15 +487,16 @@ class CacheSpec extends BaseSpec {
         assert bidResponse.seatbid[0].bid[0].ext.prebid.targeting.findAll { it.key.startsWith("hb_cache") }.isEmpty()
 
         and: "PBS shouldn't call PBC"
-        assert prebidCache.getRequestCount(bidRequest.imp[0].id) == 0
+        assert !prebidCache.getRequestCount(bidRequest.imp[0].id)
     }
 
     def "PBS should cache bids and emit error when targeting is specified and config cache is valid and internal is invalid"() {
         given: "Pbs config with cache"
-        def INVALID_PREBID_CACHE_CONFIG = ["cache.internal.path"  : CACHE_PATH,
-                                           "cache.internal.scheme": HTTP_SCHEME,
-                                           "cache.internal.host"  : CACHE_HOST]
-        def pbsService = pbsServiceFactory.getService(INVALID_PREBID_CACHE_CONFIG)
+        def config = new PbsContainerConfig(
+                ["cache.internal.path"  : CACHE_PATH,
+                "cache.internal.scheme": HTTP_SCHEME,
+                "cache.internal.host"  : CACHE_HOST])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -503,8 +506,8 @@ class CacheSpec extends BaseSpec {
         when: "PBS processes auction request"
         def bidResponse = pbsService.sendAuctionRequest(bidRequest)
 
-        then: "PBS should call PBC"
-        assert prebidCache.getRequestCount(bidRequest.imp[0].id) == 0
+        then: "PBS shouldn't call PBC"
+        assert !prebidCache.getRequestCount(bidRequest.imp[0].id)
 
         and: "Seat bid shouldn't be discarded"
         assert !bidResponse.seatbid.isEmpty()
@@ -524,13 +527,14 @@ class CacheSpec extends BaseSpec {
 
     def "PBS should cache bids when targeting is specified and config cache is invalid and internal cache config valid"() {
         given: "Pbs config with cache"
-        def INVALID_PREBID_CACHE_CONFIG = ["cache.path"  : CACHE_PATH,
-                                           "cache.scheme": HTTPS_SCHEME,
-                                           "cache.host"  : CACHE_HOST,]
-        def VALID_INTERNAL_CACHE_CONFIG = ["cache.internal.scheme": HTTP_SCHEME,
-                                           "cache.internal.host"  : "$networkServiceContainer.hostAndPort".toString(),
-                                           "cache.internal.path"  : INTERNAL_CACHE_PATH,]
-        def pbsService = pbsServiceFactory.getService(INVALID_PREBID_CACHE_CONFIG + VALID_INTERNAL_CACHE_CONFIG)
+        def config = new PbsContainerConfig(
+                ['cache.path'           : CACHE_PATH,
+                'cache.scheme'         : HTTPS_SCHEME,
+                'cache.host'           : CACHE_HOST,
+                'cache.internal.scheme': HTTP_SCHEME,
+                'cache.internal.host'  : networkServiceContainer.hostAndPort.toString(),
+                'cache.internal.path'  : INTERNAL_CACHE_PATH])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {
@@ -540,7 +544,7 @@ class CacheSpec extends BaseSpec {
         when: "PBS processes auction request"
         def bidResponse = pbsService.sendAuctionRequest(bidRequest)
 
-        then: "PBS shouldn't call PBC"
+        then: "PBS should call PBC"
         assert prebidCache.getRequestCount(bidRequest.imp[0].id) == 1
 
         and: "Bid response targeting should contain value"
@@ -560,10 +564,11 @@ class CacheSpec extends BaseSpec {
 
     def "PBS should cache bids when targeting is specified and config cache and internal cache config valid"() {
         given: "Pbs config with cache"
-        def VALID_INTERNAL_CACHE_CONFIG = ["cache.internal.scheme": HTTP_SCHEME,
-                                           "cache.internal.host"  : "$networkServiceContainer.hostAndPort".toString(),
-                                           "cache.internal.path"  : INTERNAL_CACHE_PATH]
-        def pbsService = pbsServiceFactory.getService(VALID_INTERNAL_CACHE_CONFIG)
+        def pbsConfig = new PbsContainerConfig(
+                ["cache.internal.scheme": HTTP_SCHEME,
+                "cache.internal.host"  : "$networkServiceContainer.hostAndPort".toString(),
+                "cache.internal.path"  : INTERNAL_CACHE_PATH])
+        def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Default BidRequest with cache, targeting"
         def bidRequest = BidRequest.defaultBidRequest.tap {

@@ -8,6 +8,8 @@ import org.prebid.server.functional.model.request.auction.Device
 import org.prebid.server.functional.model.request.auction.Geo
 import org.prebid.server.functional.model.request.vtrack.VtrackRequest
 import org.prebid.server.functional.model.request.vtrack.xml.Vast
+import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.tests.BaseSpec
 import org.prebid.server.functional.util.PBSUtils
 import org.prebid.server.functional.util.privacy.CcpaConsent
@@ -31,7 +33,7 @@ class BidderConfigurationSpec extends BaseSpec {
             "adapters.ix.enabled"             : "false"
     ]
 
-    private static final Map BIDDER_CONFIG = [
+    private static final PbsContainerConfig BIDDER_CONFIG = new PbsContainerConfig([
             "adapters.${GENERIC.value}.enabled"                                            : true,
             "adapters.${GENERIC.value}.meta-info.vendor-id"                                : 0,
 
@@ -44,34 +46,44 @@ class BidderConfigurationSpec extends BaseSpec {
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.meta-info.vendor-id"       : "0",
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.modifying-vast-xml-allowed": "false",
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.pbs-enforces-ccpa"         : "false"
-    ]
+    ])
 
-    private static final Map<String, String> ENABLED_DEFAULTS_CONFIG = BIDDER_CONFIG + [
+    private static final PbsContainerConfig ENABLED_DEFAULTS_CONFIG = BIDDER_CONFIG + [
             "adapter-defaults.enabled"                   : "true",
             "adapter-defaults.modifying-vast-xml-allowed": "true",
             "adapter-defaults.pbs-enforces-ccpa"         : "true",
             "adapters.generic.endpoint-compression"     : GZIP.value
     ] + DISABLE_INVALID_BIDDER_CONFIGS
 
-    private static final Map<String, String> DISABLED_DEFAULTS_CONFIG = BIDDER_CONFIG + [
+    private static final PbsContainerConfig DISABLED_DEFAULTS_CONFIG = BIDDER_CONFIG + [
             "adapter-defaults.enabled"                   : "false",
             "adapter-defaults.modifying-vast-xml-allowed": "false",
             "adapter-defaults.pbs-enforces-ccpa"         : "false",
             "adapters.generic.endpoint-compression"     : NONE.value
     ]
 
-    private static final Map<String, String> BIDDER_DISABLED_DEFAULTS_ENABLED_CONFIG = [
+    private static final PbsContainerConfig BIDDER_DISABLED_DEFAULTS_ENABLED_CONFIG = new PbsContainerConfig([
             "adapter-defaults.enabled": "true",
             "adapters.generic.enabled": "false"
-    ] + DISABLE_INVALID_BIDDER_CONFIGS
+    ] + DISABLE_INVALID_BIDDER_CONFIGS)
 
-    private static final Map<String, String> BIDDER_DISABLED_DEFAULTS_DISABLED_CONFIG = [
+    private static final PbsContainerConfig BIDDER_DISABLED_DEFAULTS_DISABLED_CONFIG = new PbsContainerConfig([
             "adapter-defaults.enabled": "false",
             "adapters.generic.enabled": "false"
-    ]
+    ])
 
-    private static final enabledDefaultService = pbsServiceFactory.getService(ENABLED_DEFAULTS_CONFIG)
-    private static final disabledDefaultService = pbsServiceFactory.getService(DISABLED_DEFAULTS_CONFIG)
+    private static PrebidServerService enabledDefaultService
+    private static PrebidServerService disabledDefaultService
+
+    def setupSpec() {
+        enabledDefaultService = pbsServiceFactory.getService(ENABLED_DEFAULTS_CONFIG)
+        disabledDefaultService = pbsServiceFactory.getService(DISABLED_DEFAULTS_CONFIG)
+    }
+
+    def cleanupSpec() {
+        pbsServiceFactory.removeContainer(ENABLED_DEFAULTS_CONFIG)
+        pbsServiceFactory.removeContainer(DISABLED_DEFAULTS_CONFIG)
+    }
 
     def "PBS should reject disabled generic bidder regardless of adapter defaults"() {
         given: "PBS with disabled generic bidder"
@@ -83,6 +95,9 @@ class BidderConfigurationSpec extends BaseSpec {
 
         then: "Response contains bidder error"
         assert response.ext?.errors[GENERIC]*.code == [2]
+
+        cleanup:
+        pbsServiceFactory.removeContainer(pbsConfig)
 
         where:
         pbsConfig << [BIDDER_DISABLED_DEFAULTS_ENABLED_CONFIG, BIDDER_DISABLED_DEFAULTS_DISABLED_CONFIG]
@@ -226,11 +241,11 @@ class BidderConfigurationSpec extends BaseSpec {
         def serverDataCenter = PBSUtils.randomString
         def serverExternalUrl = "https://${PBSUtils.randomString}.com/".toString()
         def serverHostVendorId = PBSUtils.randomNumber
-        def pbsConfig = [
+        def pbsConfig = new PbsContainerConfig([
                 "datacenter-region"  : serverDataCenter,
                 "external-url"       : serverExternalUrl,
                 "gdpr.host-vendor-id": serverHostVendorId.toString()
-        ]
+        ])
         def pbsService = pbsServiceFactory.getService(pbsConfig)
 
         and: "Bid request"
@@ -244,5 +259,8 @@ class BidderConfigurationSpec extends BaseSpec {
         assert bidderRequest?.ext?.prebid?.server?.externalUrl == serverExternalUrl
         assert bidderRequest.ext.prebid.server.datacenter == serverDataCenter
         assert bidderRequest.ext.prebid.server.gvlId == serverHostVendorId
+
+        cleanup:
+        pbsServiceFactory.removeContainer(pbsConfig)
     }
 }

@@ -13,6 +13,7 @@ import org.prebid.server.functional.model.request.auction.StoredAuctionResponse
 import org.prebid.server.functional.model.response.auction.Adm
 import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.model.response.auction.SeatBid
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.PBSUtils
 
 import static org.apache.http.HttpStatus.SC_CONTINUE
@@ -146,7 +147,7 @@ class SeatNonBidSpec extends BaseSpec {
 
     def "PBS should populate seatNonBid when returnAllBidStatus=true and requested bidder responded with not secure status code"() {
         given: "PBS with secure-markup enforcement"
-        def pbsService = pbsServiceFactory.getService(["auction.validations.secure-markup": ENFORCE.value])
+        def pbsService = pbsServiceFactory.getService(new PbsContainerConfig(["auction.validations.secure-markup": ENFORCE.value]))
 
         and: "A bid request with secure and returnAllBidStatus flags set"
         def bidRequest = requestWithAllBidStatus.tap {
@@ -257,7 +258,7 @@ class SeatNonBidSpec extends BaseSpec {
     def "PBS should populate seatNonBid when bidder is rejected due to timeout"() {
         given: "PBS config with min and max time-out"
         def timeout = 50
-        def pbsService = pbsServiceFactory.getService(["auction.biddertmax.min": timeout as String])
+        def pbsService = pbsServiceFactory.getService(new PbsContainerConfig(["auction.biddertmax.min": timeout as String]))
 
         and: "Default bid request with max timeout"
         def bidRequest = requestWithAllBidStatus.tap {
@@ -285,9 +286,9 @@ class SeatNonBidSpec extends BaseSpec {
 
     def "PBS should populate seatNonBid when filter-imp-media-type=true and imp doesn't contain supported media type"() {
         given: "Pbs config"
-        def pbsService = pbsServiceFactory.getService(
+        def pbsService = pbsServiceFactory.getService(new PbsContainerConfig(
                 ["auction.filter-imp-media-type.enabled"      : "true",
-                 "adapters.generic.meta-info.site-media-types": "banner"])
+                 "adapters.generic.meta-info.site-media-types": "banner"]))
 
         and: "Default basic BidRequest with banner"
         def bidRequest = BidRequest.defaultVideoRequest.tap {

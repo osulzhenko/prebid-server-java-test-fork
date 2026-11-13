@@ -13,7 +13,7 @@ import static org.prebid.server.functional.util.SystemProperties.USE_FIXED_CONTA
 
 class PbsServiceFactory {
 
-    private static final int MAX_CONTAINER_COUNT = maxContainerCount
+    private static final int MAX_CONTAINER_COUNT = USE_FIXED_CONTAINER_PORTS ? 1 : MAX_CONTAINER
 
     private static final Map<PbsContainerConfig, CachedContainer> containers =
             new LinkedHashMap<>(16, 0.75f, true)
@@ -32,17 +32,16 @@ class PbsServiceFactory {
         if (cached) {
             cached.container.refresh()
             cached.persistent |= policy == PERSISTENT
-            containers.put(config, cached)
-            return new PrebidServerService(cached.container)
+        } else {
+            evictIfNeeded()
+            def container = new PrebidServerContainer(config, DEBUG_ENABLED)
+            container.start()
+            cached = new CachedContainer(
+                    container: container,
+                    persistent: policy == PERSISTENT)
         }
-        evictIfNeeded()
-        def container = new PrebidServerContainer(config, DEBUG_ENABLED)
-        container.start()
-        containers.put(config, new CachedContainer(
-                container: container,
-                persistent: policy == PERSISTENT
-        ))
-        return new PrebidServerService(container)
+        containers[config] = cached
+        new PrebidServerService(cached.container)
     }
 
     private static void evictIfNeeded() {
@@ -50,7 +49,7 @@ class PbsServiceFactory {
             return
         }
 
-        def eldest = containers.entrySet().find { !it.value.persistent }
+        def eldest = containers.find { !it.value.persistent }
         if (!eldest) {
             throw new IllegalStateException("All container slots are persistent")
         }
@@ -59,19 +58,7 @@ class PbsServiceFactory {
         containers.remove(eldest.key)
     }
 
-    static void stopContainers() {
-        def iterator = containers.entrySet().iterator()
-
-        while (iterator.hasNext()) {
-            def entry = iterator.next()
-            if (!entry.value.persistent) {
-                entry.value.container.stop()
-                iterator.remove()
-            }
-        }
-    }
-
-    // Will be removed in 5.0.
+    // Will be removed in 5.0
     @Deprecated(forRemoval = true)
     static void removeContainer(Map<?, ?> config) {
         removeContainer(new PbsContainerConfig(config))
@@ -79,17 +66,6 @@ class PbsServiceFactory {
 
     static void removeContainer(PbsContainerConfig config) {
         containers.remove(config)?.container?.stop()
-    }
-
-    static void stopAllContainers() {
-        containers.values().each { it.container.stop() }
-        containers.clear()
-    }
-
-    private static int getMaxContainerCount() {
-        USE_FIXED_CONTAINER_PORTS
-                ? 1
-                : MAX_CONTAINER
     }
 
     private static class CachedContainer {

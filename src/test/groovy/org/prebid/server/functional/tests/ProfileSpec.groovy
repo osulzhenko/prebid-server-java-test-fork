@@ -54,20 +54,20 @@ class ProfileSpec extends BaseSpec {
     private static final Integer LIMIT_HOST_PROFILE = 2
     private static final Integer ACCOUNT_ID_FILE_STORAGE = PBSUtils.randomNumber
 
-    private static final Map<String, String> FILESYSTEM_CONFIG = [
+    private static final PbsContainerConfig FILESYSTEM_CONFIG = new PbsContainerConfig([
             'settings.filesystem.settings-filename'   : SETTINGS_FILENAME,
             'settings.filesystem.profiles-dir'        : PROFILES_PATH,
             'settings.filesystem.stored-requests-dir' : REQUESTS_PATH,
             'settings.filesystem.stored-imps-dir'     : IMPS_PATH,
             'settings.filesystem.stored-responses-dir': RESPONSES_PATH,
             'settings.filesystem.categories-dir'      : CATEGORIES_PATH
-    ]
+    ])
 
-    private static final Map<String, String> PROFILES_CONFIG = [
+    private static final PbsContainerConfig PROFILES_CONFIG = new PbsContainerConfig([
             'auction.profiles.fail-on-unknown': "false",
             'auction.profiles.limit'          : LIMIT_HOST_PROFILE.toString(),
             'settings.database.profiles-query': "SELECT accountId, profileId, profile, mergePrecedence, type FROM profiles " +
-                    "WHERE profileId in (%REQUEST_ID_LIST%, %IMP_ID_LIST%)".toString()]
+                    "WHERE profileId in (%REQUEST_ID_LIST%, %IMP_ID_LIST%)".toString()])
 
     private static final String LIMIT_ERROR_MESSAGE = 'Profiles exceeded the limit.'
     private static final String CONFIG_ERROR_MESSAGE = 'Profiles storage not configured.'
@@ -101,16 +101,13 @@ class ProfileSpec extends BaseSpec {
             }
             mergePrecedence = null
         }
-        def accountsConfig = new FileSystemAccountsConfig(accounts: [new AccountConfig(id: ACCOUNT_ID_FILE_STORAGE, status: ACTIVE)])
-        def folders = ContainerFileUtil.emptyFolders(
-                REQUESTS_PATH, IMPS_PATH, RESPONSES_PATH, CATEGORIES_PATH)
         def profiles = [fileRequestProfile, fileImpProfile, fileRequestProfileWithEmptyMerge, fileImpProfileWithEmptyMerge]
-                .collectEntries { profile ->
-                    ContainerFileUtil.jsonFile("$PROFILES_PATH/${profile.fileName}", profile)
-                }
+                .collectEntries { profile -> ContainerFileUtil.jsonFile("$PROFILES_PATH/${profile.fileName}", profile)}
+        def accountsConfig = new FileSystemAccountsConfig(accounts: [new AccountConfig(id: ACCOUNT_ID_FILE_STORAGE, status: ACTIVE)])
         def accountsFile = ContainerFileUtil.yamlFile(SETTINGS_FILENAME, accountsConfig)
-        def files = folders + profiles + accountsFile
-        pbsWithStoredProfiles = pbsServiceFactory.getService(new PbsContainerConfig(FILESYSTEM_CONFIG + PROFILES_CONFIG, files))
+        def folders = ContainerFileUtil.emptyFolders(REQUESTS_PATH, IMPS_PATH, RESPONSES_PATH, CATEGORIES_PATH)
+
+        pbsWithStoredProfiles = pbsServiceFactory.getService((FILESYSTEM_CONFIG + PROFILES_CONFIG).withFiles(folders + profiles + accountsFile))
     }
 
     def "PBS should use profile for request when it exist in database"() {

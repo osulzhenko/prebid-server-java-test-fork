@@ -6,6 +6,7 @@ import org.prebid.server.functional.model.request.auction.BidRequest
 import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.service.PrebidServerService
 import org.prebid.server.functional.testcontainers.Dependencies
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.tests.BaseSpec
 
 import static org.prebid.server.functional.model.Currency.EUR
@@ -18,21 +19,21 @@ import static org.prebid.server.functional.model.response.auction.ErrorType.GENE
 
 class BidderCurrencySpec extends BaseSpec {
 
-    private static final PrebidServerService noCurrencyAcceptedService = pbsServiceFactory.getService(
+    private static final PrebidServerService noCurrencyAcceptedService = pbsServiceFactory.getService(new PbsContainerConfig(
             "adapters.${BidderName.GENERIC}.meta-info.currency-accepted": "",
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.enabled": "true",
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.meta-info.vendor-id": "0",
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.endpoint": "$Dependencies.networkServiceContainer.rootUri/auction".toString(),
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.meta-info.currency-accepted": ""
-    )
+    ))
 
-    private static PrebidServerService withCurrencyAcceptedService = pbsServiceFactory.getService(
+    private static PrebidServerService withCurrencyAcceptedService = pbsServiceFactory.getService(new PbsContainerConfig(
             "adapters.generic.meta-info.currency-accepted": "${USD},${GBP}".toString(),
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.enabled": "true",
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.meta-info.vendor-id": "0",
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.endpoint": "$Dependencies.networkServiceContainer.rootUri/auction".toString(),
             "adapters.${BidderName.GENERIC}.aliases.${BidderName.ALIAS}.meta-info.currency-accepted": "${EUR},${JPY}".toString()
-    )
+    ))
 
     def "PBS should send request to bidder when adapters.bidder.meta-info.currency-accepted not specified"() {
         given: "Default bid request with generic bidder"

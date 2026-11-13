@@ -8,6 +8,7 @@ import org.prebid.server.functional.model.request.auction.Imp
 import org.prebid.server.functional.model.request.auction.Pmp
 import org.prebid.server.functional.model.request.auction.PrebidStoredRequest
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.util.PBSUtils
 
 import static org.prebid.server.functional.model.bidder.BidderName.ALIAS
@@ -25,7 +26,7 @@ import static org.prebid.server.functional.testcontainers.Dependencies.getNetwor
 
 class ImpRequestSpec extends BaseSpec {
 
-    private final PrebidServerService defaultPbsServiceWithAlias = pbsServiceFactory.getService(GENERIC_ALIAS_CONFIG)
+    private final PrebidServerService defaultPbsServiceWithAlias = pbsServiceFactory.getService(new PbsContainerConfig(GENERIC_ALIAS_CONFIG))
     private static final String EMPTY_ID = ""
 
     def "PBS should update imp fields when imp.ext.prebid.imp contain bidder information"() {
@@ -229,9 +230,9 @@ class ImpRequestSpec extends BaseSpec {
 
     def "PBS should always update specified bidder imp when imp.ext.prebid.imp contain such bidder"() {
         given: "PBs with openx bidder"
-        def pbsService = pbsServiceFactory.getService(
-                ["adapters.openx.enabled" : "true",
-                 "adapters.openx.endpoint": "$networkServiceContainer.rootUri/auction".toString()])
+        def config = new PbsContainerConfig(["adapters.openx.enabled" : "true",
+                                             "adapters.openx.endpoint": "$networkServiceContainer.rootUri/auction".toString()])
+        def pbsService = pbsServiceFactory.getService(config)
 
         and: "Default basic BidRequest"
         def impPmp = Pmp.defaultPmp

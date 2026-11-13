@@ -18,6 +18,7 @@ import org.prebid.server.functional.model.request.auction.AnalyticTagStatus
 import org.prebid.server.functional.model.request.auction.Prebid
 import org.prebid.server.functional.model.request.auction.Video
 import org.prebid.server.functional.service.PrebidServerService
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.testcontainers.scaffolding.CurrencyConversion
 import org.prebid.server.functional.testcontainers.scaffolding.FloorsProvider
 import org.prebid.server.functional.tests.BaseSpec
@@ -34,7 +35,7 @@ abstract class PriceFloorsBaseSpec extends BaseSpec {
 
     public static final BigDecimal FLOOR_MIN = 0.5
     public static final BigDecimal FLOOR_MAX = 2
-    public static final Map<String, String> FLOORS_CONFIG = ["price-floors.enabled": "true"]
+    public static final PbsContainerConfig FLOORS_CONFIG = new PbsContainerConfig(["price-floors.enabled": "true"])
 
     protected static final FloorsProvider floorsProvider = new FloorsProvider(networkServiceContainer)
 

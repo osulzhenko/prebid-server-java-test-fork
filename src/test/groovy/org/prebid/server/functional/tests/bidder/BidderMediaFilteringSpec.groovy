@@ -12,6 +12,7 @@ import org.prebid.server.functional.model.response.auction.Adm
 import org.prebid.server.functional.model.response.auction.Bid
 import org.prebid.server.functional.model.response.auction.BidResponse
 import org.prebid.server.functional.model.response.auction.ErrorType
+import org.prebid.server.functional.testcontainers.container.PbsContainerConfig
 import org.prebid.server.functional.tests.BaseSpec
 import org.prebid.server.functional.util.PBSUtils
 
@@ -29,8 +30,8 @@ import static org.prebid.server.functional.model.response.auction.MediaType.VIDE
 
 class BidderMediaFilteringSpec extends BaseSpec {
 
-    private static final Map<String, String> BIDDER_CONFIG = [
-            "adapters.${GENERIC.value}.enabled"                                            : "true",
+    private static final PbsContainerConfig BIDDER_CONFIG = new PbsContainerConfig(
+            ["adapters.${GENERIC.value}.enabled"                                            : "true",
             "adapters.${GENERIC.value}.meta-info.vendor-id"                                : "0",
             "adapters.${GENERIC.value}.meta-info.site-media-types"                         : "banner,video,native",
             "adapters.${GENERIC.value}.meta-info.app-media-types"                          : "banner,video,native",
@@ -46,16 +47,10 @@ class BidderMediaFilteringSpec extends BaseSpec {
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.meta-info.vendor-id"       : '0',
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.meta-info.site-media-types": "",
             "adapters.${GENERIC.value}.aliases.${GENER_X.value}.meta-info.app-media-types" : "",
-            "adapters.${GENERIC.value}.aliases.${GENER_X.value}.meta-info.dooh-media-types": "",
-    ]
+            "adapters.${GENERIC.value}.aliases.${GENER_X.value}.meta-info.dooh-media-types": ""])
 
-    private static final filterMediaService = pbsServiceFactory.getService(
-            BIDDER_CONFIG + ['auction.filter-imp-media-type.enabled': 'true']
-    )
-
-    private static final freeMediaService = pbsServiceFactory.getService(
-            BIDDER_CONFIG + ['auction.filter-imp-media-type.enabled': 'false']
-    )
+    private static final filterMediaService = pbsServiceFactory.getService(BIDDER_CONFIG + ['auction.filter-imp-media-type.enabled': 'true'])
+    private static final freeMediaService = pbsServiceFactory.getService(BIDDER_CONFIG + ['auction.filter-imp-media-type.enabled': 'false'])
 
     def "PBS should reject #channel request when bidder supports no media types"() {
         given: "Bid request for bidder without supported media types"
