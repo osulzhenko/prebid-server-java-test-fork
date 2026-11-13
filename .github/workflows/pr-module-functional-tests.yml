@@ -60,6 +60,7 @@ jobs:
           use-actions-summary: 'true'
           list-suites: 'failed'
           list-tests: 'failed'
+          list-files: 'failed'
           fail-on-error: true
           fail-on-empty: true
           token: ${{ secrets.GITHUB_TOKEN }}
